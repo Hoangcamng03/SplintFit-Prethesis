@@ -1,0 +1,4 @@
+Command: python tools/check_lab_notes.py --staged
+Observed: Lab note check passed (presence and format only).
+GitHub publication: pending; authentication rejected; no repository created.
+Final checker is anchored to project root; integration test from another working directory passed.

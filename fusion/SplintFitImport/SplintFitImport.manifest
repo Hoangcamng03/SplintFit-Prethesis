@@ -1,0 +1,8 @@
+{
+  "autodeskProduct": "Fusion360",
+  "type": "script",
+  "author": "SplintFit research prototype",
+  "description": {"": "Import validated SplintFit numeric user parameters with explicit mm/deg units."},
+  "version": "1.0.0",
+  "supportedOS": "windows|mac"
+}

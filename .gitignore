@@ -1,0 +1,42 @@
+# Runtime and build products
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+build/
+dist/
+*.spec
+*.log
+!verification/*.log
+core
+core.*
+# Local cases and real scans: synthetic checked-in examples are exceptions.
+cases/
+patient_data/
+volunteer_data/
+local_data/
+exports/
+my_demo_export/
+SplintFit_export_*/
+*.splintfit.json
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.stl
+*.obj
+*.ply
+*.3mf
+*.f3d
+!sample_data/synthetic_forearm_mm.obj
+!sample_data/synthetic_hand_envelope_mm.stl
+!demo_export/*.stl
+!demo_export/*.obj
+
+# Source-only GitHub import; generated geometry remains local.
+demo_export/
+sample_data/*.stl
+sample_data/*.obj
+PREVIEW_DEMO.png
