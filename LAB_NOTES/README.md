@@ -20,3 +20,5 @@ Lab note không tự sinh bằng chứng. Script chỉ hỗ trợ tạo khung v�
 | LN-20261123-002 | Kiểm quy tắc lỗ, bổ sung quản lý phiên bản và lab note |
 
 | LN-20261124-003 | Tạo repository riêng tư và nhập source |
+
+| LN-20261124-004 | Đánh giá khả thi, phạm vi lâm sàng và Fusion |

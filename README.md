@@ -51,3 +51,7 @@ Các tài liệu v3 được giữ trong history/v3_docs để truy vết. Xem F
 - CHANGELOG.md: thay đổi theo phiên bản.
 
 V4.0.1 không đổi hình học mặc định của v4. Gói demo_export đi kèm được giữ nguyên như bằng chứng baseline v4; báo cáo có các trường giải thích mới chỉ xuất khi dựng lại bằng app hiện tại.
+
+## Đánh giá luồng dự án và tính khả thi
+
+Xem [docs/PROJECT_FEASIBILITY.md](docs/PROJECT_FEASIBILITY.md) cho đối chiếu lâm sàng, bằng chứng quốc tế, Fusion và các trường hợp lỗi.
