@@ -1,5 +1,7 @@
 # SplintFit Cast Prototype v4.0.1
 
+**Tiến trình đến 26/11/2026:** [PROJECT_PROGRESS.md](docs/PROJECT_PROGRESS.md). Repository hiện là **Public** để giảng viên truy cập. Những đề xuất giao diện mới chưa được triển khai; phiên bản phần mềm vẫn là v4.0.1.
+
 Bản desktop Windows kế thừa SplintFit v3.2, bổ sung nẹp hai mảnh có lỗ thoáng và lưới quad dành cho Fusion Form.
 
 **Bắt đầu:** mở BAT_DAU_O_DAY.md. Repository không chứa mesh/ảnh/HTML nhúng hình học. Mở app và dùng mẫu mô phỏng tạo từ code, hoặc chạy python build_demo.py --output demo_export rồi mở demo_export/XEM_MAU_3D.html. Muốn chạy app: nhấp đúp START_WINDOWS.bat.
@@ -50,7 +52,7 @@ Các tài liệu v3 được giữ trong history/v3_docs để truy vết. Xem F
 - CONTRIBUTING.md và AGENTS.md: cách tạo note và commit source.
 - CHANGELOG.md: thay đổi theo phiên bản.
 
-V4.0.1 không đổi hình học mặc định của v4. Gói demo_export đi kèm được giữ nguyên như bằng chứng baseline v4; báo cáo có các trường giải thích mới chỉ xuất khi dựng lại bằng app hiện tại.
+V4.0.1 không đổi hình học mặc định của v4. Gói demo_export trong ZIP baseline được giữ như bằng chứng v4; thư mục này không có trong repository source. Tạo lại demo bằng app hoặc build_demo.py; các trường giải thích mới trong báo cáo chỉ xuất khi dựng lại bằng app hiện tại.
 
 ## Đánh giá luồng dự án và tính khả thi
 
