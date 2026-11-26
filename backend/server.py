@@ -455,26 +455,6 @@ def api_user_folders():
     )
 
 
-@app.post("/api/browse-folder")
-def api_browse_folder():
-    body = request.get_json(silent=True) or {}
-    initial = str(body.get("initial_dir") or "").strip()
-    if not initial or not Path(initial).exists():
-        initial = str(Path.home() / "Desktop")
-    try:
-        import tkinter as tk
-        from tkinter import filedialog
-
-        root = tk.Tk()
-        root.withdraw()
-        root.attributes("-topmost", True)
-        chosen = filedialog.askdirectory(title="Chọn thư mục lưu file xuất Fusion 360", initialdir=initial)
-        root.destroy()
-        return jsonify({"folder": chosen or ""})
-    except Exception as exc:
-        return jsonify({"error": f"Không mở được hộp thoại chọn thư mục: {exc}"}), 500
-
-
 @app.post("/api/export/<export_id>/open-folder")
 def api_export_open_folder(export_id: str):
     folder = EXPORT_RECORDS.get(export_id)

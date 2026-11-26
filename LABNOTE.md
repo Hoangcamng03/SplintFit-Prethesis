@@ -9,6 +9,26 @@
 
 ---
 
+## Mốc 6 — 26/11/2026: Chạy dạng cửa sổ ứng dụng máy tính độc lập & Dọn gọn mã nguồn
+
+### 1. Bối cảnh & Quyết định kỹ thuật
+Để người dùng không phải mở tab trình duyệt rườm rà hoặc gõ địa chỉ `127.0.0.1:8765`, đồng thời giữ thư mục dự án luôn sạch gọn, nhóm đã thực hiện 2 bước:
+- **Chế độ cửa sổ ứng dụng độc lập (Standalone Desktop Window):** Nâng cấp `START_STUDIO.bat` tự động khởi chạy server nền và mở **SplintFit Studio** dưới dạng cửa sổ ứng dụng Windows độc lập (`--app=http://127.0.0.1:8765 --window-size=1440,900`, không thanh địa chỉ, không tab trình duyệt) nhưng vẫn giữ trọn hiệu năng đồ họa 3D WebGL 60fps và hộp thoại chọn thư mục trực tiếp trên máy.
+- **Dọn bỏ mã nguồn dư thừa:** Xóa hẳn tệp `engine/project_io.py` (tồn dư từ bản PyQt6 cũ không còn dùng) và xóa endpoint `api_browse_folder` (`tkinter`) đã được thay thế bởi File System Access API.
+
+### 2. Trạng thái & Kết quả kiểm chứng
+- **Kiểm thử tự động:** Đạt **2/2 bài kiểm tra (2,42 giây)** sau khi dọn mã nguồn — không phát sinh lỗi hồi quy (regression).
+- **Cấu trúc dự án hiện tại gọn gàng theo 4 thư mục chức năng:** `engine/` (lõi hình học), `backend/` (máy chủ API), `frontend/` (giao diện 3D Wizard), `tests/` (kiểm thử tự động).
+
+### 3. Hạn chế & Rủi ro đang mở
+- Cần thực nghiệm mở trực tiếp `splint_form_piece_1_quad.obj` trong **Autodesk Fusion 360 (Create Form → Convert Quad Mesh to T-Splines)** để xác nhận toàn chuỗi quy trình tới sản phẩm CAD hoàn chỉnh.
+
+### 4. Bước tiếp theo cần làm ngay
+1. Mở `START_STUDIO.bat` bằng File Explorer để trải nghiệm chế độ cửa sổ ứng dụng máy tính độc lập.
+2. Thực hiện kiểm chứng bước `Quad Mesh → T-Splines` trong Autodesk Fusion 360.
+
+---
+
 ## Mốc 5 — 26/11/2026: Nâng cấp chọn thư mục trực tiếp trên trình duyệt (File System Access API)
 
 ### 1. Bối cảnh & Quyết định kỹ thuật
