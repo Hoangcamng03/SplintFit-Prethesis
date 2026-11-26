@@ -9,6 +9,27 @@
 
 ---
 
+## Mốc 10 — 27/11/2026: Chuyển thư mục làm việc về `D:\SplintFit3D\AI`, sửa nhãn 3D tiếng Anh & Đặt tên tệp theo Mã ca
+
+### 1. Bối cảnh & Quyết định kỹ thuật
+- **Chuyển kho làm việc cục bộ:** Di chuyển toàn bộ dự án sạch (kèm `.git` nối sẵn GitHub nhánh `studio-v2`) về đường dẫn cố định `D:\SplintFit3D\AI`.
+- **Sửa lỗi mất dấu tiếng Việt trên nhãn 3D:** Font nhãn tích hợp của VTK không hỗ trợ tiếng Việt có dấu (gây lỗi hiển thị `1. Đu khuu`, `2. C tay`, `3. Mt np`). → Đổi nhãn 3D sang tiếng Anh y khoa ngắn gọn, sắc nét: **`1. Elbow`**, **`2. Wrist`**, **`3. Splint Side`**.
+- **Bỏ các ô tích thừa ở khung hướng dẫn Fusion 360 (Bước 5):** Các ô tích trước đó chỉ dùng để người dùng tự đánh dấu nhưng dễ gây hiểu nhầm và làm cắt chữ ở mép phải. → Đổi sang đoạn hướng dẫn tự xuống dòng (`QLabel` có `wordWrap`) gọn sạch.
+- **Đặt tên tệp xuất ngắn gọn theo Mã ca:** Khi nhập Mã ca là `A`, 5 tệp xuất cho Fusion 360 Form sẽ tự đặt tên là **`A-1.obj`**, **`A-2.obj`** (nền All-Quad trơn), **`A-1_holes.obj`**, **`A-2_holes.obj`** (bản có lỗ), và **`A_scan.stl`** (cánh tay mẫu `mm`).
+
+### 2. Trạng thái & Kết quả kiểm chứng
+- **Kiểm thử tự động tại `D:\SplintFit3D\AI` (`tests/test_desktop_app.py`):** PASS toàn luồng 5 bước, xác nhận đúng quy ước tên `A-1.obj`, `A-2.obj`, `A-1_holes.obj`, `A-2_holes.obj`, `A_scan.stl` và toàn bộ tệp `.obj` thuần tứ giác 4 đỉnh/mặt.
+- Đã đồng bộ lên GitHub nhánh `studio-v2`.
+
+### 3. Hạn chế & Rủi ro đang mở
+- Cần thực nghiệm trực tiếp mở `A-1.obj` trong **Autodesk Fusion 360 (Create Form → Quad Mesh to T-Splines)**.
+
+### 4. Bước tiếp theo cần làm ngay
+1. Mở `D:\SplintFit3D\AI\START_STUDIO.bat` để kiểm tra nhãn 3D tiếng Anh và xuất thử file theo Mã ca (ví dụ `A-1.obj`).
+2. Nhập `A-1.obj` vào Autodesk Fusion 360 Form để kiểm chứng quy trình chỉnh dáng.
+
+---
+
 ## Mốc 9 — 26/11/2026: Nhãn 3D trực tiếp cho 3 mốc tự động & Tự dựng sẵn nẹp 2 mảnh ngay khi nạp file
 
 ### 1. Bối cảnh & Quyết định kỹ thuật

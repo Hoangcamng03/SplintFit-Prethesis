@@ -778,9 +778,10 @@ class SplintFitStudioWindow(QMainWindow):
 
         c_files, l_files = _make_card("5 file mesh mặc định cho Fusion 360 Form")
         info = QLabel(
-            "• splint_form_piece_1_quad.obj & piece_2 (Nền All-Quad trơn kéo Edit Form)\n"
-            "• splint_form_perforated_piece_1_quad.obj & piece_2 (Bản All-Quad có lỗ)\n"
-            "• scan_reference_mm.stl (Cánh tay gốc cùng hệ tọa độ mm)"
+            "Đặt tên tự động theo Mã ca (ví dụ Mã ca = A):\n"
+            "• A-1.obj & A-2.obj — Nền All-Quad trơn (kéo Edit Form mượt nhất)\n"
+            "• A-1_holes.obj & A-2_holes.obj — Bản All-Quad đã có lỗ tổ ong\n"
+            "• A_scan.stl — Cánh tay gốc cùng hệ tọa độ mm để đối chiếu khe hở"
         )
         info.setProperty("class", "muted")
         info.setWordWrap(True)
@@ -803,16 +804,18 @@ class SplintFitStudioWindow(QMainWindow):
         lay.addWidget(c_files)
 
         c_guide, l_guide = _make_card("Hướng dẫn nhanh 6 bước trong Fusion 360 Form")
-        steps_txt = [
-            "1. Preferences → Mesh: tắt Triangulate mesh polygons. Đặt đơn vị mm.",
-            "2. Create Form → Insert Mesh → splint_form_piece_1_quad.obj (Millimeter, giữ tọa độ gốc).",
-            "3. Utilities/Modify → Convert → Quad Mesh to T-Splines.",
-            "4. Chèn scan_reference_mm.stl để soi khe hở, dùng Edit Form kéo chỉnh → Finish Form.",
-            "5. Tab Surface → Thicken đẩy RA NGOÀI bằng độ dày đã chọn.",
-            "6. Tab Solid → Fillet bo tròn mép → Lưu .f3d & xuất .stl in 3D.",
-        ]
-        for s in steps_txt:
-            l_guide.addWidget(QCheckBox(s))
+        steps_txt = (
+            "1. Preferences → Mesh: tắt Triangulate mesh polygons. Đặt đơn vị mm.\n"
+            "2. Create Form → Insert Mesh → chọn <MãCa>-1.obj (Millimeter, giữ tọa độ gốc).\n"
+            "3. Utilities/Modify → Convert → Quad Mesh to T-Splines.\n"
+            "4. Chèn <MãCa>_scan.stl để soi khe hở, dùng Edit Form kéo chỉnh → Finish Form.\n"
+            "5. Tab Surface → Thicken đẩy RA NGOÀI bằng độ dày đã chọn.\n"
+            "6. Tab Solid → Fillet bo tròn mép → Lưu .f3d và xuất .stl in 3D."
+        )
+        guide_lbl = QLabel(steps_txt)
+        guide_lbl.setProperty("class", "muted")
+        guide_lbl.setWordWrap(True)
+        l_guide.addWidget(guide_lbl)
         lay.addWidget(c_guide)
         lay.addStretch()
         return page
@@ -1159,12 +1162,12 @@ class SplintFitStudioWindow(QMainWindow):
                 target_dir.mkdir(parents=True, exist_ok=False)
                 pieces = self.build_result.get("pieces") or [self.build_result]
                 for idx, piece in enumerate(pieces):
+                    suffix = "" if len(pieces) == 1 else f"-{idx + 1}"
                     if piece.get("quad") is not None:
-                        fname = "splint_form_quad.obj" if len(pieces) == 1 else f"splint_form_piece_{idx + 1}_quad.obj"
-                        write_obj(target_dir / fname, *piece["quad"])
+                        write_obj(target_dir / f"{case_id}{suffix}.obj", *piece["quad"])
                     if piece.get("perforated_quad") is not None:
-                        write_obj(target_dir / f"splint_form_perforated_piece_{idx + 1}_quad.obj", *piece["perforated_quad"])
-                self.active_mesh.save(target_dir / "scan_reference_mm.stl")
+                        write_obj(target_dir / f"{case_id}{suffix}_holes.obj", *piece["perforated_quad"])
+                self.active_mesh.save(target_dir / f"{case_id}_scan.stl")
                 exported = target_dir
 
             self.last_export_dir = exported
@@ -1260,12 +1263,12 @@ class SplintFitStudioWindow(QMainWindow):
                 self.plotter.add_mesh(pv.Sphere(radius=5.2, center=a), color="#2563EB")
                 self.plotter.add_mesh(pv.Sphere(radius=5.2, center=b), color="#EA580C")
                 label_pts.extend([a.tolist(), b.tolist()])
-                label_txts.extend(["1. Đầu khuỷu", "2. Cổ tay"])
+                label_txts.extend(["1. Elbow", "2. Wrist"])
         if self.landmarks["side"]:
             s_pt = np.asarray(self.landmarks["side"], dtype=float)
             self.plotter.add_mesh(pv.Sphere(radius=5.5, center=s_pt), color="#9333EA")
             label_pts.append(s_pt.tolist())
-            label_txts.append("3. Mặt nẹp")
+            label_txts.append("3. Splint Side")
         if label_pts:
             self.plotter.add_point_labels(
                 np.asarray(label_pts, dtype=float),

@@ -55,25 +55,26 @@ class TestSplintFitDesktopApp(unittest.TestCase):
             self.assertGreater(win.build_result["report"]["ventilation_holes"], 0)
             self.assertGreater(win.build_result["report"]["quad_faces"], 200)
 
-            # Step 5: Export clean 5-file Fusion 360 Form bundle to custom folder
+            # Step 5: Export clean 5-file Fusion 360 Form bundle named by Case ID (e.g. A -> A-1.obj)
             win._go_to_step(4)
+            win.case_id_input.setText("A")
             win.chk_export_full.setChecked(False)
             out_dir = win.run_export(override_dir=str(self.tmp_root))
             self.assertIsNotNone(out_dir)
             self.assertTrue(out_dir.exists())
 
             expected = {
-                "splint_form_piece_1_quad.obj",
-                "splint_form_piece_2_quad.obj",
-                "splint_form_perforated_piece_1_quad.obj",
-                "splint_form_perforated_piece_2_quad.obj",
-                "scan_reference_mm.stl",
+                "A-1.obj",
+                "A-2.obj",
+                "A-1_holes.obj",
+                "A-2_holes.obj",
+                "A_scan.stl",
             }
             actual = {p.name for p in out_dir.iterdir() if p.is_file()}
             self.assertEqual(actual, expected)
 
             # Verify strictly All-Quad OBJ faces (4 vertices per face) for Fusion 360 T-Spline
-            for fname in ("splint_form_piece_1_quad.obj", "splint_form_piece_2_quad.obj", "splint_form_perforated_piece_1_quad.obj"):
+            for fname in ("A-1.obj", "A-2.obj", "A-1_holes.obj"):
                 lines = (out_dir / fname).read_text(encoding="utf-8").splitlines()
                 faces = [ln.split()[1:] for ln in lines if ln.startswith("f ")]
                 self.assertGreater(len(faces), 100)
