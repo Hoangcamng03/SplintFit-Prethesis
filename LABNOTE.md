@@ -9,6 +9,24 @@
 
 ---
 
+## Mốc 12 — 27/11/2026: Hoàn thiện tài liệu hướng dẫn vận hành & giải thích thông số (`USER_GUIDE.md`)
+
+### 1. Bối cảnh & Quyết định kỹ thuật
+- Bổ sung tài liệu [USER_GUIDE.md](USER_GUIDE.md) ngay trên gốc kho mã nguồn GitHub nhằm giúp bác sĩ, kỹ thuật viên và giảng viên hướng dẫn tra cứu nhanh toàn bộ quy trình 5 bước trên **SplintFit Studio Desktop v3.2**, bảng giải thích ý nghĩa mọi thẻ lâm sàng và thông số kỹ thuật nâng cao, quy tắc tạo lưới lỗ thoáng tổ ong, cùng hướng dẫn 6 bước thực tế trên **Autodesk Fusion 360 (Form / T-Spline)** đã kiểm chứng.
+- Bổ sung bộ 4 file quét 3D quang học người thật (từ Artec Eva và Revopoint) vào thư mục dữ liệu thử nghiệm `D:\SplintFit3D\Data\New folder` (kèm `README_DATA.txt`).
+
+### 2. Trạng thái & Kết quả kiểm chứng
+- Đã liên kết `USER_GUIDE.md` vào `README.md` và đẩy đồng bộ lên GitHub nhánh `studio-v2` từ `D:\SplintFit3D\App`.
+
+### 3. Hạn chế & Rủi ro đang mở
+- Chưa thực nghiệm in 3D mẫu vật lý tại lab và chưa tự quét mẫu tay thật bằng KIRI Engine kèm đối chiếu chu vi thước dây.
+
+### 4. Bước tiếp theo cần làm ngay
+1. Test chạy thử `Artec3D_Eva_Arm_arm.stl` trên **SplintFit Studio Desktop v3.2** → xuất sang Fusion 360 Form.
+2. Quét thêm 3–5 mẫu tay tình nguyện viên bằng KIRI Engine kèm số đo thước dây để hoàn thiện phần thực nghiệm Pre-thesis.
+
+---
+
 ## Mốc 11 — 27/11/2026: Kiểm chứng thành công thực tế trên Autodesk Fusion 360 Form & Chuẩn hóa hướng dẫn trong app
 
 ### 1. Bối cảnh & Quyết định kỹ thuật

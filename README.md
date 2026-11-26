@@ -21,4 +21,5 @@ python desktop/main_window.py
 python -m unittest discover -s tests -v
 ```
 
+Xem hướng dẫn thao tác chi tiết và giải thích toàn bộ thông số tại [USER_GUIDE.md](USER_GUIDE.md).  
 Xem nhật ký phát triển chuẩn Capstone tại [LABNOTE.md](LABNOTE.md).
