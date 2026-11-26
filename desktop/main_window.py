@@ -436,6 +436,10 @@ class SplintFitStudioWindow(QMainWindow):
         btn_open.setProperty("class", "secondaryBtn")
         btn_open.clicked.connect(self._browse_scan_file)
         l1.addWidget(btn_open)
+
+        self.chk_auto_build = QCheckBox("Tự động xác định 3 mốc & dựng sẵn nẹp 2 mảnh ngay khi nạp file")
+        self.chk_auto_build.setChecked(True)
+        l1.addWidget(self.chk_auto_build)
         lay.addWidget(c1)
 
         c2, l2 = _make_card("Hoặc dùng mẫu giải phẫu có sẵn (Thử nhanh)")
@@ -546,6 +550,10 @@ class SplintFitStudioWindow(QMainWindow):
 
         btn_reset = QPushButton("Đặt lại vùng an toàn mặc định")
         btn_reset.clicked.connect(self._reset_safe_sliders)
+        btn_rebuild_here = QPushButton("Cập nhật lại nẹp 3D theo vị trí vừa chỉnh")
+        btn_rebuild_here.setProperty("class", "secondaryBtn")
+        btn_rebuild_here.clicked.connect(lambda: self.run_build(stay_on_step=True))
+        l1.addWidget(btn_rebuild_here)
         l1.addWidget(btn_reset)
         lay.addWidget(c1)
         lay.addStretch()
@@ -959,6 +967,14 @@ class SplintFitStudioWindow(QMainWindow):
 
         self._reset_safe_sliders()
         self._render_scene(reset_cam=True)
+        if self.chk_auto_build.isChecked():
+            ok = self.run_build(stay_on_step=True)
+            if ok:
+                self._go_to_step(1)
+                self._set_status(
+                    "Đã tự động xác định 3 mốc (1. Đầu khuỷu, 2. Cổ tay, 3. Mặt nẹp) và dựng sẵn nẹp 2 mảnh! Bạn có thể kéo 3 thanh trượt để chỉnh lại vị trí.",
+                    "success",
+                )
 
     def _reset_safe_sliders(self):
         sf = self.safe_frame
@@ -995,7 +1011,7 @@ class SplintFitStudioWindow(QMainWindow):
         z_end = sf["safe_min_mm"] + d_rel
         z_mid = 0.5 * (z_start + z_end)
         ang = math.radians(self.sl_ang.value())
-        r_side = (sf.get("radius_est_mm") or 30.0) + 6.0
+        r_side = (sf.get("radius_est_mm") or 30.0) + 12.0
 
         o = np.asarray(sf["origin"], dtype=float)
         z = np.asarray(sf["axis_z"], dtype=float)
@@ -1034,7 +1050,7 @@ class SplintFitStudioWindow(QMainWindow):
             auto_orient_open_normals=True,
         )
 
-    def run_build(self) -> bool:
+    def run_build(self, stay_on_step: bool = False) -> bool:
         if self.active_mesh is None:
             self._set_status("Chưa nạp dữ liệu quét.", "error")
             return False
@@ -1054,8 +1070,9 @@ class SplintFitStudioWindow(QMainWindow):
             self.last_params = params
             self._populate_inspect(res["report"])
             self._render_scene()
-            self._go_to_step(3)
-            self._set_status("Đã tạo xong nẹp 3D và lưới Quad sẵn sàng cho Fusion 360 Form!", "success")
+            if not stay_on_step:
+                self._go_to_step(3)
+            self._set_status("Đã tạo xong nẹp 2 mảnh và lưới Quad sẵn sàng cho Fusion 360 Form!", "success")
             return True
         except (DesignProblem, ValueError) as exc:
             self._set_status(str(exc), "error")
@@ -1228,20 +1245,39 @@ class SplintFitStudioWindow(QMainWindow):
         if self.active_boundaries is not None and self.active_boundaries.n_cells > 0 and self.chk_boundaries.isChecked():
             self.plotter.add_mesh(self.active_boundaries, color="#DC2626", line_width=2)
 
-        # Render Safe-Zone markers & rings
+        # Render Safe-Zone markers, rings & floating 3D labels
+        label_pts = []
+        label_txts = []
         if self.landmarks["proximal"] and self.landmarks["distal"]:
             a = np.asarray(self.landmarks["proximal"], dtype=float)
             b = np.asarray(self.landmarks["distal"], dtype=float)
             axis_v = b - a
             if np.linalg.norm(axis_v) > 5:
-                r_ring = (self.safe_frame.get("radius_est_mm", 32.0) * 1.28) if self.safe_frame else 38.0
+                r_ring = (self.safe_frame.get("radius_est_mm", 32.0) * 1.32) if self.safe_frame else 38.0
                 self.plotter.add_mesh(pv.Line(a, b), color="#0F766E", line_width=2.5)
-                self.plotter.add_mesh(_ring_polydata(a, axis_v, r_ring), color="#2563EB", line_width=3)
-                self.plotter.add_mesh(_ring_polydata(b, axis_v, r_ring), color="#EA580C", line_width=3)
-                self.plotter.add_mesh(pv.Sphere(radius=3.5, center=a), color="#2563EB")
-                self.plotter.add_mesh(pv.Sphere(radius=3.5, center=b), color="#EA580C")
+                self.plotter.add_mesh(_ring_polydata(a, axis_v, r_ring), color="#2563EB", line_width=3.5)
+                self.plotter.add_mesh(_ring_polydata(b, axis_v, r_ring), color="#EA580C", line_width=3.5)
+                self.plotter.add_mesh(pv.Sphere(radius=5.2, center=a), color="#2563EB")
+                self.plotter.add_mesh(pv.Sphere(radius=5.2, center=b), color="#EA580C")
+                label_pts.extend([a.tolist(), b.tolist()])
+                label_txts.extend(["1. Đầu khuỷu", "2. Cổ tay"])
         if self.landmarks["side"]:
-            self.plotter.add_mesh(pv.Sphere(radius=4.0, center=self.landmarks["side"]), color="#9333EA")
+            s_pt = np.asarray(self.landmarks["side"], dtype=float)
+            self.plotter.add_mesh(pv.Sphere(radius=5.5, center=s_pt), color="#9333EA")
+            label_pts.append(s_pt.tolist())
+            label_txts.append("3. Mặt nẹp")
+        if label_pts:
+            self.plotter.add_point_labels(
+                np.asarray(label_pts, dtype=float),
+                label_txts,
+                font_size=11,
+                bold=True,
+                text_color="#0F172A",
+                shape_color="#FFFFFF",
+                shape_opacity=0.88,
+                point_size=0,
+                always_visible=True,
+            )
 
         if reset_cam:
             self.plotter.reset_camera()

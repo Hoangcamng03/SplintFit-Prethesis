@@ -9,6 +9,26 @@
 
 ---
 
+## Mốc 9 — 26/11/2026: Nhãn 3D trực tiếp cho 3 mốc tự động & Tự dựng sẵn nẹp 2 mảnh ngay khi nạp file
+
+### 1. Bối cảnh & Quyết định kỹ thuật
+Để người dùng nhìn thấy ngay lập tức hệ thống đã tự động xác định 3 mốc giải phẫu và giảm thao tác lặp lại:
+- **Gắn nhãn chữ nổi trực tiếp trên mô hình 3D (`add_point_labels`):** Hiển thị rõ 3 điểm lớn kèm nhãn chữ trắng nổi bật (**`1. Đầu khuỷu`**, **`2. Cổ tay`**, **`3. Mặt nẹp`**) ngay trên cánh tay 3D; đẩy chấm tím ra ngoài bề mặt thêm `12 mm` để không bị khuất.
+- **Tự động dựng sẵn nẹp 2 mảnh ngay khi nạp file (`chk_auto_build`, bật mặc định):** Ngay khi mở tệp `.stl`/`.obj`/`.ply` hoặc mẫu thử, phần mềm tự động khóa vùng an toàn, dựng luôn nẹp 2 mảnh lưới tổ ong và chuyển sang **Bước 2** để người dùng kéo 3 thanh trượt chỉnh lại vị trí rồi bấm **Cập nhật lại nẹp 3D** nếu muốn.
+
+### 2. Trạng thái & Kết quả kiểm chứng
+- **Kiểm thử tự động (`tests/test_desktop_app.py`):** PASS toàn luồng 5 bước với chế độ tự động dựng sẵn bật mặc định.
+- Đã đồng bộ lên GitHub nhánh `studio-v2` và khởi chạy lại cửa sổ ứng dụng Desktop.
+
+### 3. Hạn chế & Rủi ro đang mở
+- Cần thực nghiệm mở trực tiếp `splint_form_piece_1_quad.obj` trong **Autodesk Fusion 360 (Create Form)**.
+
+### 4. Bước tiếp theo cần làm ngay
+1. Mở thử `Hand and Forearm - Full.stl` trong cửa sổ **SplintFit Studio Desktop** vừa bật để kiểm tra 3 nhãn 3D và nẹp 2 mảnh dựng tự động.
+2. Xuất 5 file mesh và thử `Convert → Quad Mesh to T-Splines` trong Autodesk Fusion 360.
+
+---
+
 ## Mốc 8 — 26/11/2026: Tinh chỉnh thẩm mỹ Desktop v3.1 (Sửa QSS, chiều sâu 3D & thẻ chọn 2 mảnh rõ ràng)
 
 ### 1. Bối cảnh & Quyết định kỹ thuật
