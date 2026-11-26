@@ -9,6 +9,27 @@
 
 ---
 
+## Mốc 8 — 26/11/2026: Tinh chỉnh thẩm mỹ Desktop v3.1 (Sửa QSS, chiều sâu 3D & thẻ chọn 2 mảnh rõ ràng)
+
+### 1. Bối cảnh & Quyết định kỹ thuật
+Qua ảnh chụp thực tế bản Desktop v3.0 đầu tiên, phát hiện 3 lỗi hiển thị khiến giao diện kém trực quan hơn bản Web:
+1. **Sai cú pháp selector QSS của Qt:** Dùng `.card`, `.presetCard`, `.stepPill` khiến Qt bỏ qua định dạng viền/nền của toàn bộ thẻ, nút Preset và ô tích (`QCheckBox` chưa tích bị trắng mờ không thấy ô vuông). → **Đã sửa toàn bộ sang cú pháp chuẩn Qt `[class="..."]`** và bổ sung viền rõ ràng cho `QCheckBox::indicator`.
+2. **Lỗi thứ tự vẽ trong suốt 3D (Alpha-sorting):** Lớp da tay mờ bị vẽ đè lên vỏ nẹp đặc khiến nẹp trông nhạt và khó nhìn khối 3D. → **Đã bật `enable_depth_peeling(4)`** và đổi thứ tự vẽ vỏ nẹp đặc trước, lớp da mờ sau, tăng độ tương phản ánh sáng (`ambient`/`diffuse`/`specular`).
+3. **Chọn cấu trúc 2 mảnh bị ẩn trong mục Nâng cao:** Đưa cặp thẻ **0. Cấu trúc nẹp (`Nẹp 2 mảnh tháo lắp` / `Nẹp 1 mảnh máng hở`)** lên ngay đầu Bước 3 (mặc định **2 mảnh**) để bác sĩ/kỹ thuật viên nhìn rõ ngay lập tức.
+
+### 2. Trạng thái & Kết quả kiểm chứng
+- **Kiểm thử tự động (`tests/test_desktop_app.py`):** PASS toàn luồng 5 bước, xác nhận mặc định tạo đủ **2 mảnh nẹp** và xuất đúng 5 file All-Quad cho Fusion 360 Form.
+- Đã đồng bộ lên GitHub nhánh `studio-v2` và khởi chạy lại cửa sổ ứng dụng Desktop.
+
+### 3. Hạn chế & Rủi ro đang mở
+- Vẫn cần thực nghiệm mở `splint_form_piece_1_quad.obj` trong **Autodesk Fusion 360 (Create Form)** trên máy người dùng.
+
+### 4. Bước tiếp theo cần làm ngay
+1. Kiểm tra lại giao diện trực quan & 2 mảnh nẹp trên cửa sổ **SplintFit Studio Desktop** vừa mở.
+2. Xuất 5 file mesh và thử `Convert → Quad Mesh to T-Splines` trong Fusion 360.
+
+---
+
 ## Mốc 7 — 26/11/2026: Chuyển hoàn toàn sang Ứng dụng máy tính độc lập (Native Desktop App v3.0) & Dọn sạch phần Web
 
 ### 1. Bối cảnh & Quyết định kỹ thuật

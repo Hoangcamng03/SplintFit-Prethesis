@@ -288,7 +288,11 @@ class SplintFitStudioWindow(QMainWindow):
             lay.addWidget(placeholder, 1)
         else:
             self.plotter = QtInteractor(wrap)
-            self.plotter.set_background("#EEF2F6")
+            self.plotter.set_background("#E8EEF5", top="#F8FAFC")
+            try:
+                self.plotter.enable_depth_peeling(4)
+            except Exception:
+                pass
             self.plotter.add_axes()
             lay.addWidget(self.plotter.interactor, 1)
 
@@ -564,6 +568,13 @@ class SplintFitStudioWindow(QMainWindow):
         self.preset_groups: dict[str, QButtonGroup] = {}
         self._add_preset_card(
             lay,
+            "0. Cấu trúc nẹp (1 mảnh / 2 mảnh)",
+            "mode",
+            [("bivalve", "Nẹp 2 mảnh tháo lắp\nCó 3 dải dây đai (Khuyên dùng)"), ("single", "Nẹp 1 mảnh máng hở\nĐeo kiểu máng")],
+            "bivalve",
+        )
+        self._add_preset_card(
+            lay,
             "1. Tình trạng tay (Độ ôm & lót đệm)",
             "fit",
             [("swollen", "Đang sưng\nThoáng + lót dày"), ("standard", "Ổn định\nVừa tiêu chuẩn"), ("snug", "Ôm sát\nKhông lót mút")],
@@ -836,6 +847,12 @@ class SplintFitStudioWindow(QMainWindow):
             self.run_export()
 
     def _apply_preset(self, group_key: str, val: str):
+        if group_key == "mode":
+            idx = self.sp_mode.findData(val)
+            if idx >= 0:
+                self.sp_mode.setCurrentIndex(idx)
+            self._update_clinical_summary()
+            return
         cfg = CLINICAL_PRESETS.get(group_key, {}).get(val)
         if not cfg:
             return
@@ -1153,35 +1170,9 @@ class SplintFitStudioWindow(QMainWindow):
         if self.offscreen:
             return
         self.plotter.clear()
-        self.plotter.set_background("#EEF2F6")
+        self.plotter.set_background("#E8EEF5", top="#F8FAFC")
 
-        if self.active_display is not None and self.chk_scan.isChecked():
-            self.plotter.add_mesh(
-                self.active_display,
-                color="#E6D6C7",
-                opacity=self.sl_opacity.value() / 100.0,
-                smooth_shading=True,
-            )
-
-        if self.active_boundaries is not None and self.active_boundaries.n_cells > 0 and self.chk_boundaries.isChecked():
-            self.plotter.add_mesh(self.active_boundaries, color="#DC2626", line_width=2)
-
-        # Render Safe-Zone markers & rings
-        if self.landmarks["proximal"] and self.landmarks["distal"]:
-            a = np.asarray(self.landmarks["proximal"], dtype=float)
-            b = np.asarray(self.landmarks["distal"], dtype=float)
-            axis_v = b - a
-            if np.linalg.norm(axis_v) > 5:
-                r_ring = (self.safe_frame.get("radius_est_mm", 32.0) * 1.28) if self.safe_frame else 38.0
-                self.plotter.add_mesh(pv.Line(a, b), color="#0F766E", line_width=2.5)
-                self.plotter.add_mesh(_ring_polydata(a, axis_v, r_ring), color="#2563EB", line_width=3)
-                self.plotter.add_mesh(_ring_polydata(b, axis_v, r_ring), color="#EA580C", line_width=3)
-                self.plotter.add_mesh(pv.Sphere(radius=3.5, center=a), color="#2563EB")
-                self.plotter.add_mesh(pv.Sphere(radius=3.5, center=b), color="#EA580C")
-        if self.landmarks["side"]:
-            self.plotter.add_mesh(pv.Sphere(radius=4.0, center=self.landmarks["side"]), color="#9333EA")
-
-        # Render generated 2-piece splint + Explode + Quad Wireframe
+        # Render solid 2-piece splint FIRST, translucent skin LAST so alpha sorting never hides the splint!
         if self.build_result:
             pieces = self.build_result.get("pieces") or [self.build_result]
             explode = float(self.sl_explode.value())
@@ -1204,17 +1195,53 @@ class SplintFitStudioWindow(QMainWindow):
                     sh = piece["shell"].copy()
                     if explode > 0:
                         sh.translate(shift, inplace=True)
-                    self.plotter.add_mesh(sh, color=colors[idx % 2], smooth_shading=True, specular=0.25)
+                    self.plotter.add_mesh(
+                        sh,
+                        color=colors[idx % 2],
+                        smooth_shading=True,
+                        ambient=0.22,
+                        diffuse=0.78,
+                        specular=0.35,
+                        specular_power=24,
+                    )
                 if self.chk_quad.isChecked() and piece.get("quad") is not None:
                     qm = _quad_polydata(*piece["quad"])
                     if explode > 0:
                         qm.translate(shift, inplace=True)
-                    self.plotter.add_mesh(qm, style="wireframe", color=quad_colors[idx % 2], line_width=1.4)
+                    self.plotter.add_mesh(qm, style="wireframe", color=quad_colors[idx % 2], line_width=1.5)
                 if self.chk_heatmap.isChecked() and piece.get("inner") is not None:
                     inn = piece["inner"].copy()
                     if explode > 0:
                         inn.translate(shift, inplace=True)
                     self.plotter.add_mesh(inn, scalars="nominal_clearance_mm", cmap="turbo", show_scalar_bar=False)
+
+        if self.active_display is not None and self.chk_scan.isChecked():
+            self.plotter.add_mesh(
+                self.active_display,
+                color="#E6D6C7",
+                opacity=self.sl_opacity.value() / 100.0,
+                smooth_shading=True,
+                ambient=0.25,
+                diffuse=0.75,
+            )
+
+        if self.active_boundaries is not None and self.active_boundaries.n_cells > 0 and self.chk_boundaries.isChecked():
+            self.plotter.add_mesh(self.active_boundaries, color="#DC2626", line_width=2)
+
+        # Render Safe-Zone markers & rings
+        if self.landmarks["proximal"] and self.landmarks["distal"]:
+            a = np.asarray(self.landmarks["proximal"], dtype=float)
+            b = np.asarray(self.landmarks["distal"], dtype=float)
+            axis_v = b - a
+            if np.linalg.norm(axis_v) > 5:
+                r_ring = (self.safe_frame.get("radius_est_mm", 32.0) * 1.28) if self.safe_frame else 38.0
+                self.plotter.add_mesh(pv.Line(a, b), color="#0F766E", line_width=2.5)
+                self.plotter.add_mesh(_ring_polydata(a, axis_v, r_ring), color="#2563EB", line_width=3)
+                self.plotter.add_mesh(_ring_polydata(b, axis_v, r_ring), color="#EA580C", line_width=3)
+                self.plotter.add_mesh(pv.Sphere(radius=3.5, center=a), color="#2563EB")
+                self.plotter.add_mesh(pv.Sphere(radius=3.5, center=b), color="#EA580C")
+        if self.landmarks["side"]:
+            self.plotter.add_mesh(pv.Sphere(radius=4.0, center=self.landmarks["side"]), color="#9333EA")
 
         if reset_cam:
             self.plotter.reset_camera()
