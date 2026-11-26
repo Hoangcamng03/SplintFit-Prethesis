@@ -803,14 +803,14 @@ class SplintFitStudioWindow(QMainWindow):
         l_files.addWidget(self.btn_open_exported)
         lay.addWidget(c_files)
 
-        c_guide, l_guide = _make_card("Hướng dẫn nhanh 6 bước trong Fusion 360 Form")
+        c_guide, l_guide = _make_card("Hướng dẫn nhanh 6 bước trong Autodesk Fusion 360")
         steps_txt = (
-            "1. Preferences → Mesh: tắt Triangulate mesh polygons. Đặt đơn vị mm.\n"
-            "2. Create Form → Insert Mesh → chọn <MãCa>-1.obj (Millimeter, giữ tọa độ gốc).\n"
-            "3. Utilities/Modify → Convert → Quad Mesh to T-Splines.\n"
-            "4. Chèn <MãCa>_scan.stl để soi khe hở, dùng Edit Form kéo chỉnh → Finish Form.\n"
-            "5. Tab Surface → Thicken đẩy RA NGOÀI bằng độ dày đã chọn.\n"
-            "6. Tab Solid → Fillet bo tròn mép → Lưu .f3d và xuất .stl in 3D."
+            "1. Ở màn hình thường (tab SOLID): kiểm tra cột Browser bên trái → Document Settings → Units đang là mm.\n"
+            "2. Bấm INSERT → Insert Mesh → chọn <MãCa>-1.obj (Unit: Millimeter, KHÔNG bấm Center/Move to Ground) → OK.\n"
+            "3. (Tùy chọn) Insert Mesh thêm <MãCa>_scan.stl để đối chiếu, rồi bấm hình con mắt trong Bodies để tạm ẩn cho dễ chọn.\n"
+            "4. Bấm Create Form (khối màu tím ở tab SOLID) → vào UTILITIES → Convert → chọn Quad Mesh to T-Splines → nhấp vào <MãCa>-1 → OK.\n"
+            "5. Kéo nắn dáng bằng MODIFY → Edit Form (Alt + 1) → chỉnh xong bấm FINISH FORM (dấu tích xanh lá).\n"
+            "6. Sang tab SURFACE → CREATE → Thicken đẩy RA NGOÀI (3.2 mm hoặc -3.2 mm) → tab SOLID → Fillet bo mép 1 mm → Lưu .f3d / xuất .stl."
         )
         guide_lbl = QLabel(steps_txt)
         guide_lbl.setProperty("class", "muted")

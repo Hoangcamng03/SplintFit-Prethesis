@@ -9,6 +9,27 @@
 
 ---
 
+## Mốc 11 — 27/11/2026: Kiểm chứng thành công thực tế trên Autodesk Fusion 360 Form & Chuẩn hóa hướng dẫn trong app
+
+### 1. Bối cảnh & Quyết định kỹ thuật
+- **Xác nhận thực nghiệm trên Autodesk Fusion 360 (Education License):** Người dùng đã nhập trực tiếp tệp All-Quad `.obj` xuất từ **SplintFit Studio Desktop v3.2** vào Fusion 360 và chuyển đổi thành công sang bề mặt **Form (T-Spline)** mượt mà, đều lưới, sẵn sàng kéo nắn (`Edit Form`) và tạo độ dày (`Surface → Thicken`).
+- **Cập nhật đúng thứ tự thao tác thực tế trong app (`desktop/main_window.py`):** Trên phiên bản Fusion 360 mới không còn mục `Preferences → Mesh` và lệnh `Insert Mesh` nằm ở tab `SOLID` (ngoài môi trường Form). Hướng dẫn 6 bước ngay ở Bước 5 trong app đã được viết lại theo đúng thứ tự đã kiểm chứng (`SOLID → Insert Mesh → Create Form → UTILITIES → Convert → Quad Mesh to T-Splines → Edit Form → FINISH FORM → SURFACE → Thicken`).
+
+### 2. Trạng thái & Kết quả kiểm chứng
+- **Kiểm chứng thực tế end-to-end (Scan tay thật → App Desktop → Fusion 360 Form):** Đạt **THÀNH CÔNG** trên máy người dùng (xác nhận trực tiếp qua ảnh chụp bề mặt T-Spline trong Fusion 360).
+- **Kiểm thử tự động (`tests/test_desktop_app.py`):** PASS toàn luồng 5 bước tại `D:\SplintFit3D\AI`.
+- Đã đồng bộ lên GitHub nhánh `studio-v2`.
+
+### 3. Hạn chế & Rủi ro đang mở
+- Chưa thực nghiệm in 3D mẫu vật lý từ file STL sau khi hiệu chỉnh trong Fusion 360 và chưa đo độ vừa vặn / cơ tính mẫu in.
+- Chưa thử nghiệm thêm với tệp scan tay thật quay trực tiếp từ điện thoại bằng KIRI Engine kèm đối chiếu thước dây.
+
+### 4. Bước tiếp theo cần làm ngay
+1. Thử nghiệm tương tự với mảnh 2 (`<MãCa>-2.obj`) và bản có lỗ (`<MãCa>-1_holes.obj`) trong Fusion 360 để chọn quy trình chỉnh dáng tối ưu.
+2. Chuẩn bị 1 mẫu scan tay thật từ **KIRI Engine** + đo chu vi thước dây để đưa vào báo cáo Pre-thesis và tiến tới in 3D thử nghiệm tại lab.
+
+---
+
 ## Mốc 10 — 27/11/2026: Chuyển thư mục làm việc về `D:\SplintFit3D\AI`, sửa nhãn 3D tiếng Anh & Đặt tên tệp theo Mã ca
 
 ### 1. Bối cảnh & Quyết định kỹ thuật
