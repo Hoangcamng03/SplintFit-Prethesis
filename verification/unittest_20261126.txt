@@ -1,0 +1,15 @@
+test_full_demo_build_and_fusion_form_export (test_studio_api.TestSplintFitStudioAPI.test_full_demo_build_and_fusion_form_export) ... ok
+test_health_and_frontend_served (test_studio_api.TestSplintFitStudioAPI.test_health_and_frontend_served) ... ok
+test_bad_scales_are_rejected_before_mesh_reader (test_workflow_guards.WorkflowGuards.test_bad_scales_are_rejected_before_mesh_reader) ... ok
+test_boolean_and_nonfinite_numbers_are_not_silently_coerced (test_workflow_guards.WorkflowGuards.test_boolean_and_nonfinite_numbers_are_not_silently_coerced) ... ok
+test_export_download_cannot_escape_into_prefix_sibling (test_workflow_guards.WorkflowGuards.test_export_download_cannot_escape_into_prefix_sibling) ... ok
+test_export_requires_current_token_and_identical_parameters (test_workflow_guards.WorkflowGuards.test_export_requires_current_token_and_identical_parameters) ... ok
+test_failed_rebuild_cannot_export_previous_success (test_workflow_guards.WorkflowGuards.test_failed_rebuild_cannot_export_previous_success) ... ok
+test_invalid_piece_selection_clears_result (test_workflow_guards.WorkflowGuards.test_invalid_piece_selection_clears_result) ... ok
+test_missing_triangle_inside_roi_is_blocked (test_workflow_guards.WorkflowGuards.test_missing_triangle_inside_roi_is_blocked) ... ok
+test_uploaded_scan_requires_scale_and_region_confirmation (test_workflow_guards.WorkflowGuards.test_uploaded_scan_requires_scale_and_region_confirmation) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 11.552s
+
+OK

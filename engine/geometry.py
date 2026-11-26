@@ -173,6 +173,8 @@ def suggested_points(mesh):
     f_lo, f_hi = 0.12, 0.88
     safe_lo, safe_hi = lo + f_lo * (hi - lo), lo + f_hi * (hi - lo)
     radius_est = 32.0
+    suggestion_status = 'FALLBACK_NOT_VERIFIED'
+    valid_probe_count = 0
     try:
         from cast_template import _segments, _cross
         probe_fracs = np.linspace(0.05, 0.95, 32)
@@ -208,7 +210,8 @@ def suggested_points(mesh):
                 valid.append(False)
                 slice_centers.append(None)
                 slice_radii.append(None)
-        # Find longest contiguous True run
+        valid_probe_count = sum(valid)
+        # Geometric heuristic only: a straight upper arm can also satisfy it.
         best_start, best_len, cur_start, cur_len = 0, 0, 0, 0
         for idx, ok in enumerate(valid):
             if ok:
@@ -220,13 +223,14 @@ def suggested_points(mesh):
             else:
                 cur_len = 0
         if best_len >= 4:
-            # Inset by 1 probe step from ends for guaranteed safety against open boundary / thumb split
+            # Inset sampled run; unsampled defects and anatomical identity remain unverified.
             i0 = min(best_start + 1, best_start + best_len - 2)
             i1 = max(best_start + best_len - 2, i0 + 1)
             f_lo = float(probe_fracs[i0])
             f_hi = float(probe_fracs[i1])
             safe_lo = lo + f_lo * (hi - lo)
             safe_hi = lo + f_hi * (hi - lo)
+            suggestion_status = 'SAMPLED_GEOMETRY_ONLY'
             good_radii = [r for r in slice_radii[i0 : i1 + 1] if r is not None]
             if good_radii:
                 radius_est = float(np.median(good_radii))
@@ -252,6 +256,9 @@ def suggested_points(mesh):
         'side': side_pt,
         'span_mm': span,
         'safe_frame': {
+            'suggestion_status': suggestion_status,
+            'valid_probe_count': valid_probe_count,
+            'anatomical_region_verified': False,
             'origin': [round(float(v), 3) for v in origin],
             'axis_z': [round(float(v), 6) for v in z],
             'axis_x': [round(float(v), 6) for v in x],

@@ -24,8 +24,8 @@
       <div class="brand-area">
         <div class="brand-logo" aria-hidden="true">SF</div>
         <div>
-          <div class="brand-title">SplintFit Studio <span class="badge-pill">v2.0 • Fusion Form</span></div>
-          <div class="brand-sub">Thiết kế nẹp cổ tay–cẳng tay 3D cho Bác sĩ &amp; Kỹ thuật viên</div>
+          <div class="brand-title">SplintFit Studio <span class="badge-pill">v2.1 • Prototype nghiên cứu</span></div>
+          <div class="brand-sub">Tạo mẫu dưới khuỷu → kiểm tra → chỉnh trong Fusion → in thử trên mô hình</div>
         </div>
       </div>
 
@@ -42,8 +42,8 @@
       </nav>
 
       <div class="meta-controls">
-        <input id="case-id" class="input-compact" type="text" value="CASE-001" title="Mã ca bệnh nhân" />
-        <select id="hand-side" class="select-compact" title="Bên tay">
+        <input id="case-id" class="input-compact" type="text" value="CASE-001" title="Mã mẫu nghiên cứu (không nhập tên người)" />
+        <select id="hand-side" class="select-compact" title="Bên tay ghi hồ sơ; không tự lật scan">
           <option value="Tay trái">Tay trái</option>
           <option value="Tay phải">Tay phải</option>
         </select>
@@ -79,7 +79,7 @@
           <div class="empty-card">
             <div class="empty-icon">🦾</div>
             <h2>Bắt đầu với file scan tay hoặc mẫu thử</h2>
-            <p>Kéo thả file <code>.stl</code>, <code>.obj</code>, <code>.ply</code> từ KIRI Engine ở bảng bên phải, hoặc nạp ngay mẫu giải phẫu cẳng tay–bàn tay để tạo nẹp 3D và đưa sang Fusion 360 Form.</p>
+            <p>Kéo thả file <code>.stl</code>, <code>.obj</code>, <code>.ply</code> từ KIRI Engine ở bảng bên phải, hoặc nạp ngay mẫu tổng hợp cẳng tay–bàn tay để tạo nẹp 3D và đưa sang Fusion 360 Form.</p>
             <button id="btn-quick-demo" class="btn btn-primary">Mở mẫu cẳng tay – bàn tay (Thử nhanh)</button>
           </div>
         </div>
@@ -94,7 +94,7 @@
           <label class="toggle-chip"><input type="checkbox" id="chk-boundaries" checked /> Biên hở</label>
           <label class="toggle-chip splint-only hidden"><input type="checkbox" id="chk-shell" checked /> Vỏ nẹp 3D</label>
           <label class="toggle-chip splint-only hidden"><input type="checkbox" id="chk-quad" /> Lưới Quad (Fusion Form)</label>
-          <label class="toggle-chip splint-only hidden"><input type="checkbox" id="chk-heatmap" /> Độ thoáng mặt trong</label>
+          <label class="toggle-chip splint-only hidden"><input type="checkbox" id="chk-heatmap" /> Khoảng chừa thiết kế (không phải áp lực)</label>
           <label class="range-chip splint-only hidden" title="Kéo để tách 2 mảnh nẹp ra quan sát mặt trong">
             <span>Tách 2 mảnh</span>
             <input type="range" id="rng-explode" min="0" max="45" step="1" value="0" />
@@ -118,8 +118,10 @@
             <div class="step-header">
               <span class="step-tag">Bước 1 / 5</span>
               <h3>Nạp file quét 3D cánh tay</h3>
-              <p>Hệ thống giữ nguyên bề mặt da thực tế, <strong>không tự vá lỗ</strong> để đảm bảo an toàn giải phẫu.</p>
+              <p>Nạp bề mặt ngoài của tay. App không tự vá phần thiếu; đây là prototype hình học, chưa kiểm chứng để điều trị.</p>
             </div>
+
+            <div class="info-callout">Lần đầu sử dụng: mở mẫu tổng hợp bên dưới. Với scan thật, cần biết tỷ lệ và chọn vùng dưới khuỷu. Chưa hỗ trợ khuỷu gập hoặc nhánh giữ ngón cái. <a href="/static/guide.html" target="_blank" rel="noopener">Đọc hướng dẫn và ý nghĩa thông số ↗</a></div>
 
             <div class="card">
               <div class="card-title">Tải file quét (KIRI Engine)</div>
@@ -140,8 +142,8 @@
             </div>
 
             <div class="card">
-              <div class="card-title">Dùng mẫu thử giải phẫu có sẵn</div>
-              <p class="hint-text">Mô hình cẳng tay–cổ tay–bàn tay chuẩn (có thắt cổ tay, gò cái và mỏm trâm trụ) để kiểm thử ngay.</p>
+              <div class="card-title">Dùng mẫu tổng hợp có sẵn</div>
+              <p class="hint-text">Bề mặt sinh bằng công thức, không phải scan hay giải phẫu chuẩn. Dùng để học thao tác trước.</p>
               <div class="btn-row">
                 <button id="btn-demo-hand" class="btn btn-secondary">Mẫu cẳng tay – bàn tay</button>
                 <button id="btn-demo-forearm" class="btn btn-ghost">Mẫu cẳng tay đơn giản</button>
@@ -155,6 +157,8 @@
                 <label for="scan-piece-select">Chọn phần cánh tay chính (bỏ mảnh nhiễu xung quanh)</label>
                 <select id="scan-piece-select" class="input-full"></select>
               </div>
+              <label class="switch-row"><input type="checkbox" id="confirm-scale" /><span>Tôi đã đối chiếu đơn vị/kích thước với dữ liệu tham chiếu. Với mẫu công khai chưa có số đo thật, tôi chỉ kiểm luồng phần mềm.</span></label>
+              <p class="hint-text">Chọn đơn vị trước khi nạp. Nếu sai, đổi đơn vị rồi nạp lại file. App chưa hiệu chỉnh tỷ lệ bằng hai điểm A–B trong bản Studio này.</p>
             </div>
           </div>
 
@@ -162,8 +166,8 @@
           <div class="wizard-step" data-step="2">
             <div class="step-header">
               <span class="step-tag">Bước 2 / 5</span>
-              <h3>Chỉnh vùng đặt nẹp (Tự khóa vùng an toàn)</h3>
-              <p>Hệ thống đã <strong>tự động xác định vùng cẳng tay–cổ tay hợp lệ</strong>. Bạn chỉ cần kéo 3 thanh trượt bên dưới để chỉnh chiều dài và hướng tách 2 mảnh — không lo đặt sai gây lỗi.</p>
+              <h3>Chọn vùng dưới khuỷu</h3>
+              <p>App gợi ý theo các mặt cắt. Nó chưa nhận diện khuỷu, cổ tay hay ngón cái. Hãy xoay mô hình, kiểm hai đầu và thu vùng bằng thanh trượt; scan có cả cánh tay có thể được gợi ý quá dài.</p>
             </div>
 
             <div class="card">
@@ -173,8 +177,10 @@
               </div>
 
               <div id="safe-zone-badge" class="mini-metric" style="margin-top:0;margin-bottom:12px;">
-                ✓ Vùng an toàn tự động: <strong id="safe-zone-span">0 mm</strong>
+                Vùng hình học gợi ý: <strong id="safe-zone-span">0 mm</strong>
               </div>
+              <p id="region-warning" class="hint-text"></p>
+              <button id="btn-swap-ends" type="button" class="btn btn-sm">Đảo hai đầu nếu phía khuỷu/bàn tay bị ngược</button>
 
               <div class="param-slider">
                 <div class="param-head">
@@ -182,7 +188,7 @@
                   <span class="param-val" id="val-prox-pos">0 mm</span>
                 </div>
                 <input id="sl-prox-pos" type="range" min="0" max="100" step="1" value="0" />
-                <div class="param-desc">Kéo sang phải để rút ngắn đầu khuỷu. Tự chặn trước mép hở của file scan.</div>
+                <div class="param-desc">Kéo sang phải để rút ngắn đầu khuỷu. Giới hạn theo gợi ý; phép dựng sẽ kiểm lại dữ liệu thiếu.</div>
               </div>
 
               <div class="param-slider">
@@ -191,7 +197,7 @@
                   <span class="param-val" id="val-dist-pos">100 mm</span>
                 </div>
                 <input id="sl-dist-pos" type="range" min="30" max="200" step="1" value="180" />
-                <div class="param-desc">Kéo để chỉnh sát cổ tay/gốc ngón cái. Tự chặn trước vùng tách ngón tay.</div>
+                <div class="param-desc">Kéo để chỉnh sát cổ tay/gốc ngón cái. Giới hạn theo gợi ý lấy mẫu; vẫn cần kiểm vùng thực tế.</div>
               </div>
 
               <div class="param-slider" style="margin-bottom:4px;">
@@ -204,16 +210,18 @@
               </div>
 
               <div id="span-preview" class="mini-metric hidden">
-                Chiều dài nẹp đang chọn: <strong id="span-preview-val">0 mm</strong>
+                Chiều dài theo trục giữa hai mốc: <strong id="span-preview-val">0 mm</strong>
               </div>
             </div>
+
+            <div class="card"><label class="switch-row"><input type="checkbox" id="confirm-region" /><span>Tôi đã xem mô hình: hai đầu đúng hướng, vùng chọn nằm dưới khuỷu và không qua các ngón rời. Đây là xác nhận vùng nghiên cứu, không phải duyệt điều trị.</span></label></div>
 
             <div class="card">
               <div class="card-title-row">
                 <span class="card-title">Vùng tránh tỳ đè (Tùy chọn)</span>
                 <button class="btn btn-sm" data-pick="relief">+ Chấm trên 3D</button>
               </div>
-              <p class="hint-text">Chấm vào vị trí mỏm xương lồi (như mỏm trâm trụ/quay) hoặc vết thương để nẹp tự nâng cao thêm 2 mm tại chỗ đó.</p>
+              <p class="hint-text">Chấm vùng cần tăng khoảng chừa theo yêu cầu đã xác định. Giá trị nâng là thay đổi hình học, chưa chứng minh giảm áp lực; không tự chọn cách xử lý vết thương.</p>
               <div id="relief-list" class="relief-list"></div>
             </div>
 
@@ -273,43 +281,43 @@
           <div class="wizard-step" data-step="3">
             <div class="step-header">
               <span class="step-tag">Bước 3 / 5</span>
-              <h3>Chọn cấu hình nẹp lâm sàng</h3>
-              <p>Chỉ cần chọn 4 nhóm trực quan dưới đây theo tình trạng bệnh nhân — không cần nhớ thông số CAD.</p>
+              <h3>Chọn thông số thiết kế thử</h3>
+              <p>Các nút là bộ số để so sánh prototype, không tự chọn theo chẩn đoán hoặc tình trạng sưng. Có thể mở phần nâng cao để nhập giá trị theo yêu cầu đã xác nhận.</p>
             </div>
 
             <!-- Preset 1: Clinical Fit / Swelling -->
             <div class="card">
-              <div class="card-title">1. Tình trạng tay (Độ ôm &amp; lót đệm)</div>
+              <div class="card-title">1. Không gian giữa scan và mặt trong</div>
               <div class="preset-grid cols-3" data-preset-group="fit">
                 <button type="button" class="preset-card" data-value="swollen">
-                  <div class="preset-name">Đang sưng</div>
-                  <div class="preset-sub">Thoáng rộng + lót dày</div>
+                  <div class="preset-name">Bộ thử A</div>
+                  <div class="preset-sub">Chừa 2,5 + đệm 1,0 mm</div>
                 </button>
                 <button type="button" class="preset-card active" data-value="standard">
-                  <div class="preset-name">Ổn định</div>
-                  <div class="preset-sub">Vừa vặn tiêu chuẩn</div>
+                  <div class="preset-name">Bộ thử B</div>
+                  <div class="preset-sub">Chừa 1,5 + đệm 0,5 mm</div>
                 </button>
                 <button type="button" class="preset-card" data-value="snug">
-                  <div class="preset-name">Ôm sát</div>
-                  <div class="preset-sub">Không lót mút</div>
+                  <div class="preset-name">Bộ thử C</div>
+                  <div class="preset-sub">Chừa 1,3 + đệm 0 mm</div>
                 </button>
               </div>
             </div>
 
             <!-- Preset 2: Rigidity -->
             <div class="card">
-              <div class="card-title">2. Độ cứng vỏ nẹp</div>
+              <div class="card-title">2. Độ dày vỏ thử (chưa đo độ cứng)</div>
               <div class="preset-grid cols-3" data-preset-group="rigidity">
                 <button type="button" class="preset-card" data-value="light">
-                  <div class="preset-name">Nhẹ</div>
+                  <div class="preset-name">2,8 mm</div>
                   <div class="preset-sub">Dày 2,8 mm</div>
                 </button>
                 <button type="button" class="preset-card active" data-value="medium">
-                  <div class="preset-name">Tiêu chuẩn</div>
+                  <div class="preset-name">3,2 mm</div>
                   <div class="preset-sub">Dày 3,2 mm</div>
                 </button>
                 <button type="button" class="preset-card" data-value="rigid">
-                  <div class="preset-name">Cứng chắc</div>
+                  <div class="preset-name">4,0 mm</div>
                   <div class="preset-sub">Dày 4,0 mm</div>
                 </button>
               </div>
@@ -321,11 +329,11 @@
               <div class="preset-grid cols-3" data-preset-group="vent">
                 <button type="button" class="preset-card active" data-value="honeycomb">
                   <div class="preset-name">Tổ ong thoáng</div>
-                  <div class="preset-sub">So le thoáng khí cao</div>
+                  <div class="preset-sub">Pitch 20 mm • tỷ lệ 0,58</div>
                 </button>
                 <button type="button" class="preset-card" data-value="moderate">
                   <div class="preset-name">Thoáng vừa</div>
-                  <div class="preset-sub">Thành dày hơn</div>
+                  <div class="preset-sub">Pitch 25 mm • tỷ lệ 0,48</div>
                 </button>
                 <button type="button" class="preset-card" data-value="solid">
                   <div class="preset-name">Vỏ kín</div>
@@ -338,16 +346,16 @@
             <div class="card">
               <div class="card-title">4. Đường mở đầu bàn tay</div>
               <div class="preset-grid cols-3" data-preset-group="notch">
-                <button type="button" class="preset-card active" data-value="wide">
+                <button type="button" class="preset-card" data-value="wide">
                   <div class="preset-name">Mở rộng</div>
-                  <div class="preset-sub">Thoải mái gập bàn tay</div>
+                  <div class="preset-sub">Khuyết 22 mm, đặt hướng thủ công</div>
                 </button>
                 <button type="button" class="preset-card" data-value="mild">
                   <div class="preset-name">Vừa phải</div>
-                  <div class="preset-sub">Khoét nhẹ cổ tay</div>
+                  <div class="preset-sub">Khuyết 14 mm, đặt hướng thủ công</div>
                 </button>
-                <button type="button" class="preset-card" data-value="straight">
-                  <div class="preset-name">Cắt thẳng</div>
+                <button type="button" class="preset-card active" data-value="straight">
+                  <div class="preset-name">Biên thẳng</div>
                   <div class="preset-sub">Không khoét chữ U</div>
                 </button>
               </div>
@@ -370,7 +378,7 @@
                 </div>
 
                 <div class="param-slider">
-                  <div class="param-head"><label>Khoảng hở thoáng da</label><span class="param-val" id="val-clearance">1.50 mm</span></div>
+                  <div class="param-head"><label>Khoảng chừa bổ sung ngoài đệm</label><span class="param-val" id="val-clearance">1.50 mm</span></div>
                   <input id="p-clearance" type="range" min="0.5" max="6" step="0.25" value="1.5" />
                 </div>
 
@@ -385,7 +393,7 @@
                 </div>
 
                 <div class="param-slider">
-                  <div class="param-head"><label>Độ loe nhẹ mép 2 đầu (chống cấn da)</label><span class="param-val" id="val-flare">1.4 mm</span></div>
+                  <div class="param-head"><label>Độ loe hai đầu (chưa kiểm tiếp xúc)</label><span class="param-val" id="val-flare">1.4 mm</span></div>
                   <input id="p-rim-flare" type="range" min="0" max="3.5" step="0.2" value="1.4" />
                 </div>
 
@@ -407,11 +415,11 @@
 
                 <div id="vent-controls">
                   <div class="param-slider">
-                    <div class="param-head"><label>Khoảng cách tâm lỗ</label><span class="param-val" id="val-pitch">20 mm</span></div>
+                    <div class="param-head"><label>Khoảng bố trí lỗ danh nghĩa</label><span class="param-val" id="val-pitch">20 mm</span></div>
                     <input id="p-hole-pitch" type="range" min="16" max="38" step="1" value="20" />
                   </div>
                   <div class="param-slider">
-                    <div class="param-head"><label>Độ mở lỗ trên ô</label><span class="param-val" id="val-ratio">0.58</span></div>
+                    <div class="param-head"><label>Tỷ lệ kích thước lỗ/ô (không phải % diện tích)</label><span class="param-val" id="val-ratio">0.58</span></div>
                     <input id="p-hole-ratio" type="range" min="0.25" max="0.65" step="0.02" value="0.58" />
                   </div>
                 </div>
@@ -419,7 +427,7 @@
                 <div class="divider"></div>
                 <div class="param-slider">
                   <div class="param-head"><label>Độ sâu đường mở bàn tay</label><span class="param-val" id="val-notch-depth">22 mm</span></div>
-                  <input id="p-notch-depth" type="range" min="0" max="45" step="1" value="22" />
+                  <input id="p-notch-depth" type="range" min="0" max="45" step="1" value="0" />
                 </div>
                 <div class="two-col">
                   <div class="field-row"><label>Độ rộng góc mở (°)</label><input id="p-notch-width" type="number" min="35" max="130" step="5" value="75" class="input-full" /></div>
@@ -429,9 +437,9 @@
                 <div class="divider"></div>
                 <div class="card-subtitle" style="margin-bottom:6px;">Đối chiếu chu vi thước dây (mm — để 0 nếu bỏ qua)</div>
                 <div class="three-col">
-                  <div class="field-row"><label>Gần khuỷu</label><input id="p-circ-prox" type="number" min="0" step="1" value="0" class="input-full" /></div>
-                  <div class="field-row"><label>Giữa chi</label><input id="p-circ-mid" type="number" min="0" step="1" value="0" class="input-full" /></div>
-                  <div class="field-row"><label>Cổ tay</label><input id="p-circ-dist" type="number" min="0" step="1" value="0" class="input-full" /></div>
+                  <div class="field-row"><label>Đầu vùng phía khuỷu</label><input id="p-circ-prox" type="number" min="0" step="1" value="0" class="input-full" /></div>
+                  <div class="field-row"><label>Giữa vùng đã chọn</label><input id="p-circ-mid" type="number" min="0" step="1" value="0" class="input-full" /></div>
+                  <div class="field-row"><label>Đầu vùng phía bàn tay</label><input id="p-circ-dist" type="number" min="0" step="1" value="0" class="input-full" /></div>
                 </div>
               </div>
             </details>
@@ -453,7 +461,7 @@
               <div id="result-metrics" class="stats-grid"></div>
 
               <div class="card" style="margin-top:12px;">
-                <div class="card-title">Kiểm tra an toàn hình học</div>
+                <div class="card-title">Các phép kiểm hình học đã thực hiện</div>
                 <div id="checks-list" class="checks-list"></div>
               </div>
 
@@ -491,9 +499,9 @@
             </div>
 
             <div class="card">
-              <div class="card-title">5 file mesh mặc định cho Fusion 360</div>
+              <div class="card-title">Gói Fusion: 5 mesh cho thiết kế hai mảnh</div>
               <ul class="msg-list" style="margin-bottom:12px;">
-                <li><code>splint_form_piece_1_quad.obj</code> &amp; <code>piece_2</code> — Nền All-Quad trơn (kéo <em>Edit Form</em> mượt nhất)</li>
+                <li><code>splint_form_piece_1_quad.obj</code> &amp; <code>piece_2</code> — Mặt nền tứ giác chưa có lỗ; thử Convert/Edit Form trước</li>
                 <li><code>splint_form_perforated_piece_1_quad.obj</code> &amp; <code>piece_2</code> — Bản All-Quad đã có lỗ tổ ong</li>
                 <li><code>scan_reference_mm.stl</code> — Cánh tay gốc cùng hệ tọa độ <code>mm</code> để đối chiếu khe hở</li>
               </ul>
@@ -504,7 +512,7 @@
               </label>
 
               <div id="export-success-box" class="export-result hidden">
-                <div class="export-ok-title">Đã xuất lưới Fusion 360 Form thành công!</div>
+                <div class="export-ok-title">Gói xuất trên máy chủ (chưa chuyển T-Spline)</div>
                 <div id="export-folder-path" class="code-path"></div>
                 <div class="btn-row" style="margin-top:10px;">
                   <a id="btn-download-zip" class="btn btn-primary" href="#" download>Tải gói .ZIP</a>

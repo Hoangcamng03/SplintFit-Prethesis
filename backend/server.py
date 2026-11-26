@@ -6,6 +6,8 @@ splint generation, all-quad Fusion 360 Form mesh export, and STL export.
 from __future__ import annotations
 
 import io
+import hashlib
+import json
 import os
 import re
 import subprocess
@@ -14,6 +16,7 @@ import tempfile
 import uuid
 import zipfile
 from datetime import datetime
+from dataclasses import asdict
 from pathlib import Path
 from typing import Any
 
@@ -51,6 +54,31 @@ app.config["MAX_CONTENT_LENGTH"] = 250 * 1024 * 1024  # 250 MB scans
 
 SESSIONS: dict[str, dict[str, Any]] = {}
 EXPORT_RECORDS: dict[str, Path] = {}
+APP_VERSION = "2.1.0-research"
+
+
+def _invalidate_result(session):
+    session["last_result"] = None
+    session["last_params"] = None
+    session["build_id"] = None
+
+
+def _parameters_key(params):
+    return hashlib.sha256(json.dumps(asdict(params), sort_keys=True, allow_nan=False).encode()).hexdigest()
+
+
+def _json_object():
+    body = request.get_json(silent=True)
+    if body is None:
+        return {}
+    if not isinstance(body, dict):
+        raise ValueError("Nội dung yêu cầu phải là một đối tượng JSON.")
+    return body
+
+
+@app.errorhandler(ValueError)
+def invalid_request(error):
+    return jsonify({"error": str(error)}), 400
 
 
 def _polydata_to_three_json(mesh: pv.PolyData, max_tris: int = 60000, scalar_key: str | None = None) -> dict[str, Any]:
@@ -154,12 +182,12 @@ def index_page():
 
 @app.get("/api/health")
 def api_health():
-    return jsonify({"status": "ok", "app": "SplintFit Studio", "version": "1.0.0", "pyvista": pv.__version__})
+    return jsonify({"status": "ok", "app": "SplintFit Studio", "version": APP_VERSION, "pyvista": pv.__version__})
 
 
 @app.post("/api/scan/demo")
 def api_load_demo():
-    body = request.get_json(silent=True) or {}
+    body = _json_object()
     kind = body.get("kind", "hand_forearm")
     if kind == "simple_forearm":
         mesh = demo_mesh()
@@ -196,6 +224,8 @@ def api_upload_scan():
         return jsonify({"error": f"Định dạng '{ext}' chưa hỗ trợ. Hãy dùng file .stl, .obj hoặc .ply xuất từ KIRI Engine."}), 400
     try:
         scale_mm = float(request.form.get("scale_mm", 1.0))
+        if not np.isfinite(scale_mm) or scale_mm <= 0:
+            raise ValueError("Scale must be finite and positive")
     except ValueError:
         return jsonify({"error": "Hệ số đơn vị không hợp lệ."}), 400
 
@@ -231,18 +261,23 @@ def api_upload_scan():
 
 @app.post("/api/scan/select-piece")
 def api_select_piece():
-    body = request.get_json(silent=True) or {}
+    body = _json_object()
     sid = body.get("session_id")
     session = SESSIONS.get(sid)
     if not session:
         return jsonify({"error": "Phiên làm việc không tồn tại. Hãy nạp lại file quét."}), 404
+    _invalidate_result(session)
     piece_id = body.get("piece_id")
     scan = session["scan"]
     if piece_id == "all":
         session["active_mesh"] = scan["source"]
         session["active_piece_id"] = "all"
     else:
-        found = next((p for p in scan["pieces"] if p["id"] == int(piece_id)), None)
+        try:
+            piece_id = int(piece_id)
+        except (ValueError, TypeError):
+            return jsonify({"error": "Mã mảnh lưới không hợp lệ."}), 400
+        found = next((p for p in scan["pieces"] if p["id"] == piece_id), None)
         if not found:
             return jsonify({"error": "Không tìm thấy mảnh lưới đã chọn."}), 400
         session["active_mesh"] = found["mesh"]
@@ -252,6 +287,15 @@ def api_select_piece():
 
 
 def _parse_parameters(data: dict[str, Any]) -> Parameters:
+    if not isinstance(data, dict):
+        raise ValueError("Thông số phải là một đối tượng JSON.")
+    for key, value in data.items():
+        if key in {"cast_template", "ventilation", "allow_incomplete_preview"}:
+            if type(value) is not bool:
+                raise ValueError("Tùy chọn phải là đúng/sai: " + key)
+        elif key.endswith(("_mm", "_deg")) or key in {"hole_ratio", "coverage_deg"}:
+            if isinstance(value, bool) or not isinstance(value, (int, float)) or not np.isfinite(value):
+                raise ValueError("Thông số phải là số hữu hạn: " + key)
     return Parameters(
         axis="AUTO",
         proximal_point=data.get("proximal_point"),
@@ -271,7 +315,7 @@ def _parse_parameters(data: dict[str, Any]) -> Parameters:
         ventilation=bool(data.get("ventilation", True)),
         hole_pitch_mm=float(data.get("hole_pitch_mm", 20.0)),
         hole_ratio=float(data.get("hole_ratio", 0.58)),
-        hand_notch_depth_mm=float(data.get("hand_notch_depth_mm", 22.0)),
+        hand_notch_depth_mm=float(data.get("hand_notch_depth_mm", 0.0)),
         hand_notch_width_deg=float(data.get("hand_notch_width_deg", 75.0)),
         hand_notch_angle_deg=float(data.get("hand_notch_angle_deg", 0.0)),
         rim_flare_mm=float(data.get("rim_flare_mm", 1.4)),
@@ -288,15 +332,22 @@ def _parse_parameters(data: dict[str, Any]) -> Parameters:
 @app.post("/api/build")
 def api_build():
     try:
-        body = request.get_json(silent=True) or {}
+        body = _json_object()
         sid = body.get("session_id")
         session = SESSIONS.get(sid)
         if not session:
             return jsonify({"error": "Phiên làm việc không tồn tại. Hãy nạp lại file quét."}), 404
+        # A failed rebuild must never leave an older model exportable.
+        _invalidate_result(session)
+        confirmations = body.get("confirmations") or {}
+        if not isinstance(confirmations, dict):
+            raise ValueError("Các xác nhận phải là một đối tượng JSON.")
+        if not session["is_demo"] and (
+            confirmations.get("scale") is not True or confirmations.get("region") is not True
+        ):
+            return jsonify({"error": "Xác nhận tỷ lệ và vùng dưới khuỷu ở bước 1–2 trước khi tạo. Gợi ý tự động chưa nhận diện giải phẫu."}), 400
         params = _parse_parameters(body.get("params", {}))
         result = engine_build(session["active_mesh"], params)
-        session["last_result"] = result
-        session["last_params"] = params
 
         pieces_payload = []
         raw_pieces = result.get("pieces") or [result]
@@ -321,15 +372,20 @@ def api_build():
                 }
             )
 
-        return jsonify(
+        build_id = uuid.uuid4().hex
+        response = jsonify(
             {
                 "status": result.get("status", "ready"),
+                "build_id": build_id,
                 "export_ready": bool(result.get("export_ready", False)),
                 "form_available": bool(result.get("form_available", False)),
                 "report": result.get("report", {}),
                 "pieces": pieces_payload,
             }
         )
+        session.update(last_result=result, last_params=params, build_id=build_id,
+                       confirmations=confirmations)
+        return response
     except DesignProblem as exc:
         return jsonify({"error": str(exc), "error_type": "design_problem"}), 422
     except ValueError as exc:
@@ -341,13 +397,17 @@ def api_build():
 @app.post("/api/export")
 def api_export():
     try:
-        body = request.get_json(silent=True) or {}
+        body = _json_object()
         sid = body.get("session_id")
         session = SESSIONS.get(sid)
         if not session or not session.get("last_result"):
             return jsonify({"error": "Chưa có mô hình nẹp nào được tạo. Hãy tạo mô hình ở bước 3 trước."}), 400
         result = session["last_result"]
         params = session["last_params"]
+        if body.get("build_id") != session.get("build_id"):
+            return jsonify({"error": "Kết quả đã cũ. Hãy tạo lại mô hình trước khi xuất."}), 409
+        if "params" not in body or _parameters_key(_parse_parameters(body["params"])) != _parameters_key(params):
+            return jsonify({"error": "Thông số đã thay đổi. Hãy tạo lại mô hình trước khi xuất."}), 409
         if not result.get("export_ready"):
             return jsonify({"error": "Mô hình hiện tại chưa đạt điều kiện xuất file."}), 400
 
@@ -355,13 +415,15 @@ def api_export():
         side = str(body.get("side", "Tay trái"))
         notes = str(body.get("notes", ""))
         export_mode = str(body.get("export_mode", "fusion_only"))
+        if export_mode not in {"full", "fusion_only"}:
+            return jsonify({"error": "Chọn gói Fusion hoặc gói đầy đủ."}), 400
         custom_dir = str(body.get("output_dir") or "").strip()
         if custom_dir:
             base_dir = Path(custom_dir).expanduser()
             base_dir.mkdir(parents=True, exist_ok=True)
         else:
             base_dir = EXPORTS_DIR
-        stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        stamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
         folder_name = f"{case_id}_{stamp}"
         target_dir = base_dir / folder_name
 
@@ -372,7 +434,11 @@ def api_export():
                 "notes": notes,
                 "source_name": session["source_name"],
                 "exported_at": datetime.now().isoformat(timespec="seconds"),
-                "app": "SplintFit Studio v2.0",
+                "app": "SplintFit Studio " + APP_VERSION,
+                "build_id": session["build_id"],
+                "scale_mm": session["scale_mm"],
+                "confirmations": session.get("confirmations", {}),
+                "clinical_validation": "NOT_VALIDATED",
             }
             exported_path = export_bundle(target_dir, session["active_mesh"], result, params, metadata)
         else:
@@ -409,6 +475,8 @@ def api_export():
                 "files": files_list,
             }
         )
+    except (ValueError, TypeError) as exc:
+        return jsonify({"error": str(exc)}), 400
     except Exception as exc:
         return jsonify({"error": f"Không thể xuất gói file: {exc}"}), 500
 
@@ -437,7 +505,7 @@ def api_export_file(export_id: str, relpath: str):
     if not folder or not folder.exists():
         return jsonify({"error": "Gói xuất không tồn tại."}), 404
     target = (folder / relpath).resolve()
-    if not str(target).startswith(str(folder.resolve())) or not target.is_file():
+    if not target.is_relative_to(folder.resolve()) or not target.is_file():
         return jsonify({"error": "Không tìm thấy tệp."}), 404
     return Response(target.read_bytes(), mimetype="application/octet-stream")
 

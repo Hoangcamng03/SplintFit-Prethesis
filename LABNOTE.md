@@ -1,3 +1,18 @@
+# Bổ sung rà soát ngày 26/11/2026 — Studio v2.1
+
+Xem [LN-20261126-006](LAB_NOTES/LN-20261126-006_verified-studio-workflow.md), [quy trình](docs/TEST_PROTOCOL.md) và [kết quả chạy mới](docs/TEST_RESULTS.md).
+
+Các mốc dưới đây được giữ nguyên như ghi chép của agent trước, **không được coi là mọi tuyên bố đã tái hiện hoặc kiểm chứng**. Cụ thể:
+
+- “Safe-Zone” chỉ là gợi ý từ mặt cắt/PCA; có thể bao gồm phần trên khuỷu. Bản mới yêu cầu kiểm vùng, có cảnh báo và đảo hai đầu.
+- “Đang sưng/Ổn định/Ôm sát”, “cứng chắc”, “chống cấn” và “ổn định 100%” chưa có phép thử lâm sàng/cơ học/GUI đủ để kết luận. Đã sửa nhãn trong app và giữ số thử để truy vết.
+- All-Quad nghĩa là mặt có bốn đỉnh; không bảo đảm các mặt đều nhau hay chuyển T-Spline thành công. Watertight chỉ là một điều kiện topology.
+- Các lần 2/2 test là bộ API Studio, không phải 90 test Qt và không phải phép thử trình duyệt/Fusion.
+- Bản rà soát đã chạy một scan công khai khác có nguồn và hash (UW GRAIL 001), ba cấu hình và kiểm âm dữ liệu thiếu. Không xác nhận lại file `Hand and Forearm - Full.stl` được nhắc ở mốc 3 vì không có file/nguồn đó trong lần rà soát này.
+- Không tự vá lỗ giúp giữ giới hạn dữ liệu; bản thân nguyên tắc đó không chứng minh thiết bị an toàn.
+
+---
+
 # NHẬT KÝ PHÁT TRIỂN DỰ ÁN (CAPSTONE LAB NOTEBOOK)
 ## Đề tài: SplintFit Studio — Hệ thống bán tự động thiết kế nẹp cổ tay–cẳng tay 3D cá thể hóa kết hợp Autodesk Fusion 360 (Form / T-Spline)
 

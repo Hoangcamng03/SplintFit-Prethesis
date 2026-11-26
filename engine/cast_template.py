@@ -374,7 +374,7 @@ def build_piece(mesh, p, opposite=False, progress=None, fit=None):
         'fusion_conversion': 'NOT_TESTED_IN_FUSION',
         'hole_filling': False,
         'messages': [
-            f'Mảnh nẹp có {len(holes)} lỗ thoáng tổ ong so le, {len(slots)} khe luồn dây đai và loe mép {rim_flare_mm:.1f} mm chống cấn da.',
+            f'Mảnh nẹp có {len(holes)} lỗ thoáng tổ ong so le, {len(slots)} khe luồn dây đai và loe mép {rim_flare_mm:.1f} mm; chưa kiểm tiếp xúc/áp lực.',
             'Gói Fusion Form gồm bản nền trơn All-Quad (khuyên dùng để kéo nắn T-Spline) và bản đã đục lỗ.',
             'Cần bo tròn mép (Fillet) và kiểm tra lại độ vừa với scan_reference_mm.stl trong Fusion 360 trước khi in 3D.',
         ],

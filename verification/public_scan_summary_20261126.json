@@ -1,0 +1,271 @@
+{
+  "source_page": "https://grail.cs.washington.edu/data/scans/",
+  "archive_url": "https://grail.cs.washington.edu/data/scans/arms-obj.zip",
+  "attribution": "University of Washington Graphics and Imaging Laboratory; Brett Allen, Brian Curless, Zoran Popović (SIGGRAPH 2002)",
+  "usage": "Research only, noncommercial; retain author acknowledgement. Not redistributed.",
+  "archive_sha256": "8173ea5ed4a93a4ee358924ee84a1a3d8d7b7ad727a38e508dda776ea0487fe3",
+  "mesh_sha256": "0984b05e1980e4b5fcd465f50e97b0c496db516c2c672ff069f4ec307ef72730",
+  "scale_assumption": "Coordinate values treated as mm (scale=1); no independent anthropometry. Software test only.",
+  "scope": "Manually shortened forearm sleeve; does not demonstrate wrist immobilization.",
+  "scan_stats": {
+    "boundary_branch_vertices": 12,
+    "boundary_edges": 1677,
+    "components": 1,
+    "degenerate_triangles": 0,
+    "edge_watertight": false,
+    "inconsistent_edges": 0,
+    "nonmanifold_edges": 0,
+    "triangles": 94795,
+    "vertices": 48215
+  },
+  "missing_triangle_test": {
+    "http": 422,
+    "error": "Vùng scan thiếu dữ liệu hoặc có cạnh lỗi; không tự vá lỗ trên vùng tiếp xúc da."
+  },
+  "software_pipeline_passed": true,
+  "fusion": "NOT_TESTED",
+  "printing": "NOT_TESTED",
+  "clinical": "NOT_VALIDATED",
+  "cases": [
+    {
+      "name": "perforated_B",
+      "length_mm": 206.0000090345418,
+      "build_seconds": 2.615,
+      "holes": 26,
+      "slots": 12,
+      "shell_stats": {
+        "boundary_branch_vertices": 0,
+        "boundary_edges": 0,
+        "components": 2,
+        "degenerate_triangles": 0,
+        "edge_watertight": true,
+        "inconsistent_edges": 0,
+        "nonmanifold_edges": 0,
+        "triangles": 9216,
+        "vertices": 4536
+      },
+      "nominal_min_mm": 2.0,
+      "sampled_unsigned_min_mm": 0.7776979253991146,
+      "scan_in_wall_samples": 0,
+      "fusion_file_count": 5,
+      "full_file_count": 18,
+      "obj_quad_checks": [
+        {
+          "file": "splint_form_perforated_piece_1_quad.obj",
+          "quad_faces": 944,
+          "sha256": "e23b269c979bb5d5f07a04bcfb4dc2414b63955c3537170b2aa9de797a070561"
+        },
+        {
+          "file": "splint_form_perforated_piece_2_quad.obj",
+          "quad_faces": 944,
+          "sha256": "5ecea2191aa4afedc4a23a6e84c68810a19fd02fca86a32b657ef49b83c16dfd"
+        },
+        {
+          "file": "splint_form_piece_1_quad.obj",
+          "quad_faces": 420,
+          "sha256": "b5c7e0e73c814865aded5490ce237240cd2e258d036648f0aee5ea730253506c"
+        },
+        {
+          "file": "splint_form_piece_2_quad.obj",
+          "quad_faces": 420,
+          "sha256": "3ed4b72510399926350aa64814b8724a3a9bb05e90de6d987b2492f5ff4c3bfd"
+        }
+      ],
+      "stl_readback": [
+        {
+          "file": "shell_piece_1_prototype.stl",
+          "stats": {
+            "vertices": 2268,
+            "triangles": 4608,
+            "boundary_edges": 0,
+            "nonmanifold_edges": 0,
+            "boundary_branch_vertices": 0,
+            "inconsistent_edges": 0,
+            "degenerate_triangles": 0,
+            "components": 1,
+            "edge_watertight": true
+          },
+          "sha256": "82d0bd332b4781b5e4c7b85dbf3bb0ff3cfea31f735fed7fb3db918a6d03f9e1"
+        },
+        {
+          "file": "shell_piece_2_prototype.stl",
+          "stats": {
+            "vertices": 2268,
+            "triangles": 4608,
+            "boundary_edges": 0,
+            "nonmanifold_edges": 0,
+            "boundary_branch_vertices": 0,
+            "inconsistent_edges": 0,
+            "degenerate_triangles": 0,
+            "components": 1,
+            "edge_watertight": true
+          },
+          "sha256": "7efc742c15eaf4c6bd1c4555751aa18476728b72072bef13990c0dd5cfa853ba"
+        }
+      ]
+    },
+    {
+      "name": "perforated_A",
+      "length_mm": 206.0000090345418,
+      "build_seconds": 2.71,
+      "holes": 26,
+      "slots": 12,
+      "shell_stats": {
+        "boundary_branch_vertices": 0,
+        "boundary_edges": 0,
+        "components": 2,
+        "degenerate_triangles": 0,
+        "edge_watertight": true,
+        "inconsistent_edges": 0,
+        "nonmanifold_edges": 0,
+        "triangles": 9216,
+        "vertices": 4536
+      },
+      "nominal_min_mm": 3.5,
+      "sampled_unsigned_min_mm": 2.043924465800172,
+      "scan_in_wall_samples": 0,
+      "fusion_file_count": 5,
+      "full_file_count": 18,
+      "obj_quad_checks": [
+        {
+          "file": "splint_form_perforated_piece_1_quad.obj",
+          "quad_faces": 944,
+          "sha256": "cea56b7705e5a7540f83a1867279095d3b12c32d5dba0bded6a64817833d3df7"
+        },
+        {
+          "file": "splint_form_perforated_piece_2_quad.obj",
+          "quad_faces": 944,
+          "sha256": "6569dd2ab974b64bbc2b699613134acce50188922fa5775af968bb4f2a35e4c6"
+        },
+        {
+          "file": "splint_form_piece_1_quad.obj",
+          "quad_faces": 420,
+          "sha256": "4aa187a8210647aa40dfd27e6a014114adc8249dbde76e9c8861b8951a075721"
+        },
+        {
+          "file": "splint_form_piece_2_quad.obj",
+          "quad_faces": 420,
+          "sha256": "876996a3ea207e39cb97e8c4e3319e3dcc75984d26007ff71fbdd9c14c181245"
+        }
+      ],
+      "stl_readback": [
+        {
+          "file": "shell_piece_1_prototype.stl",
+          "stats": {
+            "vertices": 2268,
+            "triangles": 4608,
+            "boundary_edges": 0,
+            "nonmanifold_edges": 0,
+            "boundary_branch_vertices": 0,
+            "inconsistent_edges": 0,
+            "degenerate_triangles": 0,
+            "components": 1,
+            "edge_watertight": true
+          },
+          "sha256": "6629f90f6f0255add1fcc6e2fb159224c1409bbc97b2ee168f77154494b7a824"
+        },
+        {
+          "file": "shell_piece_2_prototype.stl",
+          "stats": {
+            "vertices": 2268,
+            "triangles": 4608,
+            "boundary_edges": 0,
+            "nonmanifold_edges": 0,
+            "boundary_branch_vertices": 0,
+            "inconsistent_edges": 0,
+            "degenerate_triangles": 0,
+            "components": 1,
+            "edge_watertight": true
+          },
+          "sha256": "2f20c23464d1f7687a67d62b74e2fa8fb5a8ec0700be80acb0c46f19db53e785"
+        }
+      ]
+    },
+    {
+      "name": "no_ventilation_C",
+      "length_mm": 206.0000090345418,
+      "build_seconds": 2.722,
+      "holes": 0,
+      "slots": 12,
+      "shell_stats": {
+        "boundary_branch_vertices": 0,
+        "boundary_edges": 0,
+        "components": 2,
+        "degenerate_triangles": 0,
+        "edge_watertight": true,
+        "inconsistent_edges": 0,
+        "nonmanifold_edges": 0,
+        "triangles": 6720,
+        "vertices": 3340
+      },
+      "nominal_min_mm": 1.3,
+      "sampled_unsigned_min_mm": 0.08115046590074225,
+      "scan_in_wall_samples": 0,
+      "fusion_file_count": 5,
+      "full_file_count": 18,
+      "obj_quad_checks": [
+        {
+          "file": "splint_form_perforated_piece_1_quad.obj",
+          "quad_faces": 736,
+          "sha256": "a9a3ead1af06b5305b26b2dbea0e92955e59f678afee0b5153a2179abbfff640"
+        },
+        {
+          "file": "splint_form_perforated_piece_2_quad.obj",
+          "quad_faces": 736,
+          "sha256": "fd9fa7816bfe2bda3f256fdd9caaf94ad44133836eec5a968e254df9f1c47d6f"
+        },
+        {
+          "file": "splint_form_piece_1_quad.obj",
+          "quad_faces": 420,
+          "sha256": "36e4da1d59e43302cb8cfeb80bbcab882cd288b9a58d7d9e6ac3202c701b7817"
+        },
+        {
+          "file": "splint_form_piece_2_quad.obj",
+          "quad_faces": 420,
+          "sha256": "9e261a0f0278cb91642a57f0473fca3d4767868fb78c29f3a3dc2f77a4883e15"
+        }
+      ],
+      "stl_readback": [
+        {
+          "file": "shell_piece_1_prototype.stl",
+          "stats": {
+            "vertices": 1670,
+            "triangles": 3360,
+            "boundary_edges": 0,
+            "nonmanifold_edges": 0,
+            "boundary_branch_vertices": 0,
+            "inconsistent_edges": 0,
+            "degenerate_triangles": 0,
+            "components": 1,
+            "edge_watertight": true
+          },
+          "sha256": "9270f2e1daead28b7e0864a2a26065fbf684ddd0046c015530ee6e2b3f1ff52f"
+        },
+        {
+          "file": "shell_piece_2_prototype.stl",
+          "stats": {
+            "vertices": 1670,
+            "triangles": 3360,
+            "boundary_edges": 0,
+            "nonmanifold_edges": 0,
+            "boundary_branch_vertices": 0,
+            "inconsistent_edges": 0,
+            "degenerate_triangles": 0,
+            "components": 1,
+            "edge_watertight": true
+          },
+          "sha256": "112dd4075898b61ecbe7b3a0a341dd979fcbccd5ace12757e754ab6b78543253"
+        }
+      ]
+    }
+  ],
+  "live_http": {
+    "health_version": "2.1.0-research",
+    "upload_http": 200,
+    "build_http": 200,
+    "export_http": 200,
+    "zip_http": 200,
+    "file_count": 5,
+    "length_mm": 206.0000090345418
+  }
+}

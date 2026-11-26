@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from backend.server import app  # noqa: E402
+from backend.server import app, SESSIONS, EXPORT_RECORDS  # noqa: E402
 
 
 class TestSplintFitStudioAPI(unittest.TestCase):
@@ -37,6 +37,8 @@ class TestSplintFitStudioAPI(unittest.TestCase):
         css = self.client.get("/static/styles.css")
         self.assertEqual(css.status_code, 200)
         self.assertIn("--primary", css.get_data(as_text=True))
+        idx.close()
+        css.close()
 
     def test_full_demo_build_and_fusion_form_export(self):
         # 1. Load synthetic forearm-hand scan
@@ -48,6 +50,13 @@ class TestSplintFitStudioAPI(unittest.TestCase):
         self.assertGreater(scan["mesh"]["triangle_count"], 1000)
 
         # 2. Build 2-piece perforated splint + Fusion 360 Form Quad cage
+        params = {
+            'proximal_point': lm['proximal'], 'distal_point': lm['distal'], 'side_point': lm['side'],
+            'splint_mode': 'bivalve', 'cast_template': True, 'clearance_mm': 1.5,
+            'padding_mm': .5, 'thickness_mm': 3.2, 'seam_gap_mm': 4.,
+            'ventilation': True, 'hole_pitch_mm': 24., 'hole_ratio': .48,
+            'hand_notch_depth_mm': 18.,
+        }
         r_build = self.client.post(
             "/api/build",
             json={
@@ -83,6 +92,7 @@ class TestSplintFitStudioAPI(unittest.TestCase):
             "/api/export",
             json={
                 "session_id": sid,
+                "build_id": built['build_id'], "params": params,
                 "case_id": "TEST-FUSION",
                 "side": "Tay trái",
             },
@@ -137,6 +147,7 @@ class TestSplintFitStudioAPI(unittest.TestCase):
             "/api/export",
             json={
                 "session_id": sid,
+                "build_id": built['build_id'], "params": params,
                 "case_id": "TEST-FULL",
                 "side": "Tay trái",
                 "export_mode": "full",
