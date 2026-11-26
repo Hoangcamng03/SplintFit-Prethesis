@@ -9,6 +9,32 @@
 
 ---
 
+## Mốc 7 — 26/11/2026: Chuyển hoàn toàn sang Ứng dụng máy tính độc lập (Native Desktop App v3.0) & Dọn sạch phần Web
+
+### 1. Bối cảnh & Quyết định kỹ thuật
+Để người dùng vận hành phần mềm hoàn toàn tự nhiên như một ứng dụng máy tính Windows chuẩn (không cần mở trình duyệt, không cần chạy server web cục bộ, mở hộp thoại chọn thư mục Windows gốc 100% ổn định), toàn bộ giao diện **SplintFit Studio** đã được viết lại thành **ứng dụng Desktop gốc bằng PyQt6 + PyVistaQt**, giữ trọn vẹn thiết kế hiện đại và các tính năng đã kiểm chứng:
+- **Giao diện sáng chuẩn y khoa (`desktop/theme.py`, `desktop/main_window.py`):** Quy trình 5 bước rõ ràng với đúng 1 nút hành động chính mỗi bước, thanh báo trạng thái gọn gàng không che tiêu đề.
+- **Giữ nguyên 100% các nâng cấp cốt lõi:**
+  - *Bước 1:* Mở trực tiếp file `.stl`/`.obj`/`.ply` bằng hộp thoại Windows gốc (`QFileDialog`) hoặc dùng mẫu giải phẫu cẳng tay–bàn tay.
+  - *Bước 2:* Tự động khóa vùng an toàn (*Safe-Zone*) + 3 thanh trượt chỉnh trực tiếp vòng cắt 3D (*Đầu khuỷu*, *Đầu bàn tay*, *Xoay hướng tách 2 mảnh*).
+  - *Bước 3:* 4 nhóm thẻ cấu hình lâm sàng cho Bác sĩ + mục mở rộng cho Kỹ thuật viên.
+  - *Bước 4:* Khung 3D tương tác có thanh **Tách 2 mảnh**, chỉnh **Mờ chi**, bật/tắt **Lưới Quad (Fusion Form)** và bản đồ độ thoáng mặt trong.
+  - *Bước 5:* Chọn nơi lưu trực tiếp bằng cửa sổ Windows gốc (`QFileDialog.getExistingDirectory`, tự nhớ thư mục qua `QSettings`) + 3 nút nhanh (`Desktop`, `Downloads`, `Documents`), xuất mặc định đúng 5 file mesh chuẩn cho Fusion 360 Form và mở thẳng thư mục bằng `explorer.exe`.
+- **Dọn gọn toàn bộ phần không dùng:** Xóa hoàn toàn thư mục `backend/`, `frontend/` và bộ test web cũ `tests/test_studio_api.py`; thay bằng `desktop/` và `tests/test_desktop_app.py`.
+
+### 2. Trạng thái & Kết quả kiểm chứng
+- **Kiểm thử tự động ứng dụng Desktop (`tests/test_desktop_app.py`):** Đạt **1/1 toàn luồng 5 bước PASS (3,72 giây)** — xác minh nạp mẫu giải phẫu, trượt thanh Safe-Zone, dựng nẹp 2 mảnh lưới tổ ong, xuất đúng 5 tệp All-Quad (4 đỉnh/mặt) vào thư mục tùy chọn, và giữ nguyên tùy chọn xuất đầy đủ.
+- **Kiểm chứng trên tệp tay thật `Hand and Forearm - Full.stl` (158.894 mặt):** Tự động nhận vùng an toàn cổ tay và dựng thành công nẹp 2 mảnh trực tiếp trong ứng dụng Desktop.
+
+### 3. Hạn chế & Rủi ro đang mở
+- Cần thực nghiệm trực tiếp bước chuyển đổi `Quad Mesh → T-Splines` trên phần mềm **Autodesk Fusion 360** từ gói xuất của bản Desktop v3.0.
+
+### 4. Bước tiếp theo cần làm ngay
+1. Người dùng nhấp đúp `START_STUDIO.bat` để mở trực tiếp **SplintFit Studio Desktop v3.0** trên Windows.
+2. Xuất 5 file mesh ra Desktop/Documents và mở thử `splint_form_piece_1_quad.obj` trong **Autodesk Fusion 360 (Create Form)**.
+
+---
+
 ## Mốc 6 — 26/11/2026: Chạy dạng cửa sổ ứng dụng máy tính độc lập & Dọn gọn mã nguồn
 
 ### 1. Bối cảnh & Quyết định kỹ thuật
