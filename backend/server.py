@@ -431,6 +431,30 @@ def api_export_download(export_id: str):
     )
 
 
+@app.get("/api/export/<export_id>/file/<path:relpath>")
+def api_export_file(export_id: str, relpath: str):
+    folder = EXPORT_RECORDS.get(export_id)
+    if not folder or not folder.exists():
+        return jsonify({"error": "Gói xuất không tồn tại."}), 404
+    target = (folder / relpath).resolve()
+    if not str(target).startswith(str(folder.resolve())) or not target.is_file():
+        return jsonify({"error": "Không tìm thấy tệp."}), 404
+    return Response(target.read_bytes(), mimetype="application/octet-stream")
+
+
+@app.get("/api/user-folders")
+def api_user_folders():
+    home = Path.home()
+    return jsonify(
+        {
+            "desktop": str(home / "Desktop"),
+            "downloads": str(home / "Downloads"),
+            "documents": str(home / "Documents"),
+            "default": str(EXPORTS_DIR),
+        }
+    )
+
+
 @app.post("/api/browse-folder")
 def api_browse_folder():
     body = request.get_json(silent=True) or {}

@@ -9,6 +9,27 @@
 
 ---
 
+## Mốc 5 — 26/11/2026: Nâng cấp chọn thư mục trực tiếp trên trình duyệt (File System Access API)
+
+### 1. Bối cảnh & Quyết định kỹ thuật
+Khi chạy ứng dụng dưới dạng Web App cục bộ, việc mở hộp thoại chọn thư mục từ tiến trình nền Python (`tkinter`) dễ bị Windows chặn hiển thị đè lên trình duyệt. Để người dùng chọn nơi lưu tệp tự nhiên và ổn định 100% ngay trên Brave/Chrome/Edge, hệ thống đã chuyển sang kết hợp 2 cơ chế:
+- **Chọn thư mục trực tiếp từ trình duyệt (`window.showDirectoryPicker` — File System Access API):** Khi bấm **📁 Chọn thư mục trên máy…**, chính trình duyệt sẽ bật cửa sổ Windows Explorer chuẩn ở lớp trên cùng và ghi thẳng 5 tệp `.obj`/`.stl` vào thư mục con `<Mã_ca>_<ngày_giờ>` ngay trong thư mục người dùng chọn.
+- **3 nút chọn nhanh 1-click (`Desktop`, `Downloads`, `Documents`):** Hỗ trợ chọn nhanh đường dẫn chuẩn của Windows mà không cần mở hộp thoại, vẫn giữ song song nút **Tải gói .ZIP**.
+
+### 2. Trạng thái & Kết quả kiểm chứng
+- **Mã nguồn cập nhật:** `backend/server.py` (thêm API truyền từng tệp `/api/export/<id>/file/<path>` và `/api/user-folders`), `frontend/index.html`, `frontend/app.js`, `tests/test_studio_api.py`.
+- **Kiểm thử tự động:** Đạt **2/2 bài kiểm tra (2,91 giây)** — xác nhận API truyền từng tệp, danh sách thư mục chuẩn Windows (`Desktop/Downloads/Documents`), gói 5 tệp All-Quad và chế độ xuất đầy đủ đều hoạt động chính xác.
+
+### 3. Hạn chế & Rủi ro đang mở
+- API `showDirectoryPicker` hoạt động chuẩn trên trình duyệt nhân Chromium (Brave, Chrome, Edge); trên Firefox/Safari hệ thống tự động hướng người dùng dùng 3 nút `Desktop / Downloads / Documents` hoặc `Tải gói .ZIP`.
+- Vẫn cần thực nghiệm trực tiếp bước `Convert (Quad Mesh to T-Splines)` trong **Autodesk Fusion 360** trên máy người dùng.
+
+### 4. Bước tiếp theo cần làm ngay
+1. Người dùng tải lại trang `http://127.0.0.1:8765`, bấm **📁 Chọn thư mục trên máy…** để xuất thử 5 file mesh ra Desktop/Documents.
+2. Nhập `splint_form_piece_1_quad.obj` vào **Autodesk Fusion 360 (Create Form)** theo hướng dẫn 7 bước.
+
+---
+
 ## Mốc 4 — 26/11/2026: Tối ưu quy trình xuất lưới cho Fusion 360 & Chọn thư mục lưu linh hoạt
 
 ### 1. Bối cảnh & Quyết định kỹ thuật

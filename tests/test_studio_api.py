@@ -115,7 +115,15 @@ class TestSplintFitStudioAPI(unittest.TestCase):
             self.assertGreater(len(faces), 100)
             self.assertTrue(all(len(f) == 4 for f in faces), f"{fname} must be strictly all-quad for Fusion 360 Form!")
 
-        # 4. Verify ZIP download works
+        # 4. Verify individual file streaming (for Browser File System Access API) & ZIP download
+        r_file = self.client.get(f"/api/export/{exp['export_id']}/file/splint_form_piece_1_quad.obj")
+        self.assertEqual(r_file.status_code, 200)
+        self.assertIn(b"SplintFit_Inner_Control_Cage", r_file.data)
+
+        r_folders = self.client.get("/api/user-folders")
+        self.assertEqual(r_folders.status_code, 200)
+        self.assertIn("desktop", r_folders.get_json())
+
         r_zip = self.client.get(exp["download_url"])
         self.assertEqual(r_zip.status_code, 200)
         with zipfile.ZipFile(io.BytesIO(r_zip.data)) as zf:

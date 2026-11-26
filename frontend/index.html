@@ -474,14 +474,20 @@
 
             <div class="card">
               <div class="card-title">Chọn nơi lưu file xuất</div>
-              <div class="field-row">
-                <label for="export-output-dir">Thư mục đích trên máy tính</label>
-                <div class="btn-row" style="flex-wrap:nowrap;">
-                  <input id="export-output-dir" type="text" class="input-full" placeholder="Mặc định: exports/ (hoặc bấm Chọn thư mục…)" />
-                  <button id="btn-browse-dir" type="button" class="btn btn-secondary" style="white-space:nowrap;">Chọn thư mục…</button>
-                </div>
+              <div class="btn-row" style="margin-bottom:8px;">
+                <button id="btn-pick-native-dir" type="button" class="btn btn-secondary" style="flex:1;">📁 Chọn thư mục trên máy…</button>
               </div>
-              <p class="hint-text" style="margin-bottom:0;">Mỗi lần xuất sẽ tạo 1 thư mục con theo mã ca (ví dụ <code>CASE-001_...</code>) bên trong thư mục bạn chọn.</p>
+              <div id="native-dir-status" class="mini-metric hidden" style="margin-top:0;margin-bottom:8px;"></div>
+              <div class="field-row" style="margin-bottom:6px;">
+                <label for="export-output-dir">Hoặc chọn nhanh / dán đường dẫn thư mục</label>
+                <input id="export-output-dir" type="text" class="input-full" placeholder="Mặc định: exports/" />
+              </div>
+              <div class="btn-row" style="margin-bottom:6px;">
+                <button type="button" class="btn btn-sm quick-dir-btn" data-dir-key="desktop">Desktop</button>
+                <button type="button" class="btn btn-sm quick-dir-btn" data-dir-key="downloads">Downloads</button>
+                <button type="button" class="btn btn-sm quick-dir-btn" data-dir-key="documents">Documents</button>
+              </div>
+              <p class="hint-text" style="margin-bottom:0;">Mỗi lần xuất sẽ tạo 1 thư mục con theo mã ca (ví dụ <code>CASE-001_...</code>) bên trong nơi bạn chọn.</p>
             </div>
 
             <div class="card">

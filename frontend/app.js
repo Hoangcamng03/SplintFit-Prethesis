@@ -15,6 +15,8 @@ const state = {
   pickMode: null,
   buildData: null,
   lastExportId: null,
+  exportDirHandle: null,
+  userFolders: null,
 };
 
 // Clinical Presets Mapping (Doctor-friendly -> Verified Engineering Values)
@@ -768,8 +770,30 @@ async function exportBundle() {
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Xuất gói thất bại.');
     state.lastExportId = data.export_id;
+    let savedLocationText = data.folder_path;
+
+    // If user picked a native folder via Browser File System Access API, write files directly into it!
+    if (state.exportDirHandle) {
+      setLoading(true, `Đang ghi trực tiếp vào thư mục "${state.exportDirHandle.name}"…`);
+      const subDir = await state.exportDirHandle.getDirectoryHandle(data.folder_name, { create: true });
+      for (const f of data.files) {
+        const parts = f.path.split('/');
+        let targetDir = subDir;
+        for (let i = 0; i < parts.length - 1; i++) {
+          targetDir = await targetDir.getDirectoryHandle(parts[i], { create: true });
+        }
+        const fileHandle = await targetDir.getFileHandle(parts[parts.length - 1], { create: true });
+        const writable = await fileHandle.createWritable();
+        const fRes = await fetch(`/api/export/${data.export_id}/file/${encodeURI(f.path)}`);
+        const blob = await fRes.blob();
+        await writable.write(blob);
+        await writable.close();
+      }
+      savedLocationText = `${state.exportDirHandle.name}\\${data.folder_name} (đã ghi trực tiếp vào thư mục bạn chọn!)`;
+    }
+
     $('#export-success-box').classList.remove('hidden');
-    $('#export-folder-path').textContent = data.folder_path;
+    $('#export-folder-path').textContent = savedLocationText;
     $('#btn-download-zip').href = data.download_url;
     $('#export-files-list').innerHTML = data.files
       .map((f) => {
@@ -777,7 +801,12 @@ async function exportBundle() {
         return `<div class="file-item ${isQuad ? 'highlight' : ''}"><span>${isQuad ? '⭐ ' : ''}${f.path}</span><span>${f.size_kb} KB</span></div>`;
       })
       .join('');
-    showToast('Đã xuất gói Fusion 360 Form + STL thành công!', 'success');
+    showToast(
+      state.exportDirHandle
+        ? `Đã lưu trực tiếp ${data.files.length} file vào "${state.exportDirHandle.name}\\${data.folder_name}"!`
+        : 'Đã xuất gói Fusion 360 Form thành công!',
+      'success'
+    );
   } catch (err) {
     showToast(err.message, 'error');
   } finally {
@@ -812,28 +841,43 @@ $('#btn-copy-path').addEventListener('click', async () => {
   }
 });
 
-// Restore saved export directory & bind native Windows folder picker
+// Restore saved export directory & bind native Browser Directory Picker + quick folder presets
 const savedDir = localStorage.getItem('splintfit_output_dir');
 if (savedDir && $('#export-output-dir')) $('#export-output-dir').value = savedDir;
 
-$('#btn-browse-dir').addEventListener('click', async () => {
-  const current = ($('#export-output-dir').value || '').trim();
-  try {
-    const res = await fetch('/api/browse-folder', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ initial_dir: current }),
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Không mở được hộp thoại.');
-    if (data.folder) {
-      $('#export-output-dir').value = data.folder;
-      localStorage.setItem('splintfit_output_dir', data.folder);
-      showToast(`Đã chọn thư mục lưu: ${data.folder}`, 'success', 3000);
+fetch('/api/user-folders')
+  .then((r) => r.json())
+  .then((d) => (state.userFolders = d))
+  .catch(() => {});
+
+$$('.quick-dir-btn').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    const key = btn.dataset.dirKey;
+    const p = state.userFolders?.[key];
+    if (!p) return;
+    state.exportDirHandle = null;
+    $('#native-dir-status').classList.add('hidden');
+    $('#export-output-dir').value = p;
+    localStorage.setItem('splintfit_output_dir', p);
+    showToast(`Đã chọn thư mục lưu: ${p}`, 'success', 2800);
+  });
+});
+
+$('#btn-pick-native-dir').addEventListener('click', async () => {
+  if (typeof window.showDirectoryPicker === 'function') {
+    try {
+      const handle = await window.showDirectoryPicker({ mode: 'readwrite' });
+      state.exportDirHandle = handle;
+      const statusEl = $('#native-dir-status');
+      statusEl.innerHTML = `✓ Đã chọn thư mục trực tiếp: <strong>${handle.name}</strong>`;
+      statusEl.classList.remove('hidden');
+      showToast(`Đã chọn thư mục "${handle.name}". Khi bấm Xuất, file sẽ lưu thẳng vào đây!`, 'success', 3500);
+      return;
+    } catch (err) {
+      if (err?.name === 'AbortError') return;
     }
-  } catch (err) {
-    showToast(friendlyError(err), 'error', 4500);
   }
+  showToast('Trình duyệt hiện tại không hỗ trợ chọn thư mục trực tiếp. Hãy dùng nút Desktop / Downloads / Documents bên dưới.', 'info', 4500);
 });
 
 $('#btn-quick-demo').addEventListener('click', () => loadDemo('hand_forearm'));
