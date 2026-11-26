@@ -7,3 +7,5 @@ exports/
 .DS_Store
 Thumbs.db
 *.log
+research_data/
+test-results/

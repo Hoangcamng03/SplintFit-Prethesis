@@ -1,0 +1,3 @@
+Node workflow guard + directory-failure ZIP fallback: PASS.
+JavaScript module syntax check: PASS.
+Harness uses real functions and minimal DOM adapter; not a browser, WebGL, Windows or directory-dialog test.

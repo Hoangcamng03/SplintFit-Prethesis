@@ -17,10 +17,13 @@ const state = {
   lastExportId: null,
   exportDirHandle: null,
   userFolders: null,
+  busy: false,
+  builtParams: null,
+  isDemo: false,
 };
 
-// Clinical Presets Mapping (Doctor-friendly -> Verified Engineering Values)
-const CLINICAL_PRESETS = {
+// Research comparison presets: no clinical or mechanical validation implied.
+const RESEARCH_PRESETS = {
   fit: {
     swollen: { clearance: 2.5, padding: 1.0 },
     standard: { clearance: 1.5, padding: 0.5 },
@@ -56,8 +59,39 @@ function showToast(msg, type = 'info', duration = 4500) {
 }
 
 function setLoading(active, text = 'Đang xử lý hình học 3D…') {
+  state.busy = active;
   $('#loading-text').textContent = text;
   $('#loading-overlay').classList.toggle('hidden', !active);
+  // Prevent overlapping VTK requests and parameter edits while a request is in flight.
+  $$('.wizard-drawer button, .wizard-drawer input, .wizard-drawer select, .step-pill, .meta-controls input, .meta-controls select, #btn-quick-demo').forEach((el) => {
+    if (active) {
+      if (!el.hasAttribute('data-was-disabled')) el.dataset.wasDisabled = String(el.disabled);
+      el.disabled = true;
+    } else if (el.hasAttribute('data-was-disabled')) {
+      el.disabled = el.dataset.wasDisabled === 'true';
+      delete el.dataset.wasDisabled;
+    }
+  });
+}
+
+function invalidateDesign() {
+  clearSplintVisuals();
+  state.builtParams = null;
+  state.lastExportId = null;
+  $('#inspect-content').classList.add('hidden');
+  $('#build-empty-notice').classList.remove('hidden');
+  $('#build-empty-notice').textContent = 'Chưa có kết quả cho thông số hiện tại. Tạo lại mô hình ở Bước 3.';
+  $('#export-success-box').classList.add('hidden');
+  $('#btn-download-zip').removeAttribute('href');
+}
+
+function confirmations() {
+  return { scale: $('#confirm-scale').checked, region: $('#confirm-region').checked };
+}
+
+function currentBuildMatches() {
+  return state.buildData?.export_ready && state.builtParams &&
+    JSON.stringify(collectParameters()) === JSON.stringify(state.builtParams);
 }
 
 // ==================== Three.js 3D Studio ====================
@@ -343,6 +377,7 @@ renderer.domElement.addEventListener('pointerdown', (e) => {
 });
 
 renderer.domElement.addEventListener('pointerup', (e) => {
+  if (state.busy) return;
   if (!state.pickMode || !activeScanMesh) return;
   if (Math.hypot(e.clientX - pointerDownPos.x, e.clientY - pointerDownPos.y) > 5) return;
 
@@ -357,6 +392,8 @@ renderer.domElement.addEventListener('pointerup', (e) => {
   }
   const p = hits[0].point;
   const coords = [Number(p.x.toFixed(2)), Number(p.y.toFixed(2)), Number(p.z.toFixed(2))];
+  invalidateDesign();
+  $('#confirm-region').checked = false;
 
   if (state.pickMode === 'relief') {
     const radius = parseFloat($('#relief-radius').value) || 18;
@@ -401,8 +438,21 @@ const PRIMARY_BTN_LABELS = {
 };
 
 function goToStep(stepNum) {
+  if (state.busy) return;
   if (stepNum > 1 && !state.sessionId) {
     showToast('Hãy nạp file scan hoặc mở mẫu thử ở Bước 1 trước.', 'info');
+    return;
+  }
+  if (stepNum > 1 && !$('#confirm-scale').checked) {
+    showToast('Kiểm đơn vị/kích thước và xác nhận ở Bước 1.', 'info');
+    return;
+  }
+  if (stepNum > 2 && !$('#confirm-region').checked) {
+    showToast('Kiểm hai đầu và xác nhận vùng dưới khuỷu ở Bước 2.', 'info');
+    return;
+  }
+  if (stepNum === 5 && !currentBuildMatches()) {
+    showToast('Cần tạo lại và kiểm kết quả hiện tại ở Bước 3–4 trước khi xuất.', 'info');
     return;
   }
   state.step = Math.max(1, Math.min(5, stepNum));
@@ -438,7 +488,8 @@ function updateClinicalSummary() {
   const pad = Number($('#p-padding').value).toFixed(1);
   const th = Number($('#p-thickness').value).toFixed(1);
   const fl = Number($('#p-rim-flare').value).toFixed(1);
-  $('#clinical-summary-pill').textContent = `${mode} • Hở da ${cl} mm • Lót ${pad} mm • Dày ${th} mm • Loe mép ${fl} mm`;
+  const total = (Number(cl) + Number(pad)).toFixed(2);
+  $('#clinical-summary-pill').textContent = `${mode} • Chừa ${cl} + đệm ${pad} = ${total} mm danh nghĩa • Vỏ ${th} mm • Loe ${fl} mm. Chưa đo áp lực/độ bền.`;
 }
 
 function setInputValue(id, value) {
@@ -457,7 +508,7 @@ $$('.preset-grid').forEach((grid) => {
       grid.querySelectorAll('.preset-card').forEach((c) => c.classList.remove('active'));
       card.classList.add('active');
       const val = card.dataset.value;
-      const cfg = CLINICAL_PRESETS[group]?.[val];
+      const cfg = RESEARCH_PRESETS[group]?.[val];
       if (!cfg) return;
       if (group === 'fit') {
         setInputValue('#p-clearance', cfg.clearance);
@@ -479,7 +530,11 @@ $$('.preset-grid').forEach((grid) => {
 function initSafeZoneSliders(sf) {
   state.safeFrame = sf;
   if (!sf) return;
-  const span = Math.max(30, Math.round(sf.safe_max_mm - sf.safe_min_mm));
+  const span = Math.floor(sf.safe_max_mm - sf.safe_min_mm);
+  if (!Number.isFinite(span) || span < 30) {
+    $('#region-warning').textContent = 'Gợi ý quá ngắn; chọn lại vùng hoặc dữ liệu. Chưa xác nhận giải phẫu.';
+    return;
+  }
   const slProx = $('#sl-prox-pos');
   const slDist = $('#sl-dist-pos');
   const slAng = $('#sl-seam-angle');
@@ -494,10 +549,15 @@ function initSafeZoneSliders(sf) {
 
   slAng.value = 0;
   $('#safe-zone-span').textContent = `dài tối đa ${span} mm`;
+  $('#region-warning').textContent = sf.suggestion_status === 'SAMPLED_GEOMETRY_ONLY'
+    ? 'Gợi ý từ 32 lát cắt, chưa xác nhận vị trí cổ tay/khuỷu. Hai đầu có thể ngược; thu vùng trước khi xác nhận.'
+    : 'Không tìm được chuỗi mặt cắt đủ dài; đang dùng vùng dự phòng CHƯA KIỂM. Chọn mốc thủ công hoặc đổi scan.';
   syncLandmarksFromSliders();
 }
 
 function syncLandmarksFromSliders(changed = null) {
+  invalidateDesign();
+  $('#confirm-region').checked = false;
   const sf = state.safeFrame;
   if (!sf) return;
   const slProx = $('#sl-prox-pos');
@@ -549,6 +609,11 @@ function syncLandmarksFromSliders(changed = null) {
 
 // ==================== UI Updates ====================
 function updateScanUI(data) {
+  invalidateDesign();
+  state.safeFrame = null;
+  state.isDemo = data.is_demo;
+  $('#confirm-scale').checked = data.is_demo;
+  $('#confirm-region').checked = false;
   state.sessionId = data.session_id;
   state.sourceName = data.source_name;
   state.suggestedLandmarks = data.suggested_landmarks;
@@ -571,7 +636,7 @@ function updateScanUI(data) {
   $('#scan-summary-card').classList.remove('hidden');
   $('#scan-stats-grid').innerHTML = `
     <div class="stat-box"><div class="stat-label">Độ chi tiết lưới</div><div class="stat-value">${st.triangles.toLocaleString('vi-VN')} mặt</div></div>
-    <div class="stat-box"><div class="stat-label">Chiều dài mẫu</div><div class="stat-value">${data.suggested_landmarks.span_mm} mm</div></div>
+    <div class="stat-box"><div class="stat-label">Độ trải toàn scan theo PCA</div><div class="stat-value">${data.suggested_landmarks.span_mm} mm</div></div>
     <div class="stat-box"><div class="stat-label">Cạnh biên hở</div><div class="stat-value">${st.boundary_edges}</div></div>
     <div class="stat-box"><div class="stat-label">Số khối bề mặt</div><div class="stat-value">${data.total_pieces}</div></div>
   `;
@@ -614,6 +679,7 @@ function updateReliefUI() {
   $$('[data-del-relief]').forEach((btn) => {
     btn.addEventListener('click', () => {
       state.reliefs.splice(Number(btn.dataset.delRelief), 1);
+      invalidateDesign();
       updateReliefUI();
       renderMarkers();
     });
@@ -628,15 +694,17 @@ function updateInspectUI(data) {
     <div class="stat-box"><div class="stat-label">Chiều dài nẹp</div><div class="stat-value">${(r.length_mm || 0).toFixed(1)} mm</div></div>
     <div class="stat-box"><div class="stat-label">Lưới Quad (Fusion)</div><div class="stat-value">${(r.quad_faces || 0).toLocaleString('vi-VN')} ô</div></div>
     <div class="stat-box"><div class="stat-label">Lỗ tổ ong / Khe đai</div><div class="stat-value">${r.ventilation_holes || 0} lỗ • ${r.strap_slots || 0} khe</div></div>
-    <div class="stat-box"><div class="stat-label">Độ hở mặt trong</div><div class="stat-value">${(r.nominal_clearance_min_mm || 0).toFixed(1)}–${(r.nominal_clearance_max_mm || 0).toFixed(1)} mm</div></div>
+    <div class="stat-box"><div class="stat-label">Khoảng chừa danh nghĩa</div><div class="stat-value">${(r.nominal_clearance_min_mm || 0).toFixed(2)}–${(r.nominal_clearance_max_mm || 0).toFixed(2)} mm</div></div>
+    <div class="stat-box"><div class="stat-label">Khoảng cách không dấu nhỏ nhất (lấy mẫu)</div><div class="stat-value">${Number.isFinite(r.sampled_unsigned_surface_distance_min_mm) ? r.sampled_unsigned_surface_distance_min_mm.toFixed(3) + ' mm' : 'Chưa đo'}</div></div>
+    <div class="stat-box"><div class="stat-label">Fusion / áp lực / cơ học</div><div class="stat-value">Chưa kiểm chứng</div></div>
   `;
 
   const badgeMap = {
     PASSED: ['Đạt', 'st-pass'],
-    PASSED_SAMPLED: ['Đạt', 'st-pass'],
+    PASSED_SAMPLED: ['Qua phép lấy mẫu', 'st-warn'],
     FAILED: ['Cần chỉnh', 'st-fail'],
     NOT_ENTERED: ['Chưa đo', 'st-muted'],
-    NOT_VALIDATED: ['Chưa thử lâm sàng', 'st-warn'],
+    NOT_VALIDATED: ['Chưa kiểm chứng', 'st-warn'],
   };
   $('#checks-list').innerHTML = (r.technical_checks || [])
     .map((c) => {
@@ -659,6 +727,8 @@ function friendlyError(err) {
 }
 
 async function loadDemo(kind = 'hand_forearm') {
+  if (state.busy) return;
+  invalidateDesign();
   setLoading(true, 'Đang nạp mẫu giải phẫu cẳng tay–bàn tay…');
   try {
     const res = await fetch('/api/scan/demo', {
@@ -669,7 +739,7 @@ async function loadDemo(kind = 'hand_forearm') {
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Không thể nạp mẫu thử.');
     updateScanUI(data);
-    showToast('Đã nạp mẫu tay chuẩn & tự gợi ý 3 mốc. Nhấn "Tiếp tục chọn vùng →" để xem.', 'success');
+    showToast('Đã nạp mẫu tổng hợp. Sang Bước 2 để xem và xác nhận vùng.', 'success');
   } catch (err) {
     showToast(err.message, 'error');
   } finally {
@@ -678,6 +748,8 @@ async function loadDemo(kind = 'hand_forearm') {
 }
 
 async function uploadScanFile(file) {
+  if (state.busy) return;
+  invalidateDesign();
   setLoading(true, `Đang đọc file ${file.name}…`);
   try {
     const fd = new FormData();
@@ -696,14 +768,41 @@ async function uploadScanFile(file) {
 }
 
 async function buildSplint() {
+  if (state.busy) return;
   if (!state.sessionId) return showToast('Chưa nạp file scan.', 'error');
   if (!state.landmarks.proximal || !state.landmarks.distal || !state.landmarks.side) {
     goToStep(2);
     return showToast('Hãy chọn đủ 3 mốc ở Bước 2.', 'error');
   }
+  if (!$('#confirm-scale').checked || !$('#confirm-region').checked) {
+    return showToast('Xác nhận tỷ lệ ở Bước 1 và vùng ở Bước 2 trước khi tạo.', 'error');
+  }
+  invalidateDesign();
   setLoading(true, 'Đang dựng nẹp 2 mảnh lưới tổ ong, loe mép & lưới Quad cho Fusion Form…');
   try {
-    const params = {
+    const params = collectParameters();
+    const res = await fetch('/api/build', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ session_id: state.sessionId, params, confirmations: confirmations() }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Không tạo được mô hình nẹp.');
+    renderSplint(data);
+    state.builtParams = structuredClone(params);
+    updateInspectUI(data);
+    setLoading(false);
+    goToStep(4);
+    showToast(data.export_ready ? 'Đã dựng prototype qua các phép kiểm hiện có; hãy xem giới hạn tại Bước 4.' : 'Đã dựng bản xem nhưng chưa đủ điều kiện xuất. Xem báo cáo Bước 4.', data.export_ready ? 'success' : 'info');
+  } catch (err) {
+    showToast(friendlyError(err), 'error', 6500);
+  } finally {
+    setLoading(false);
+  }
+}
+
+function collectParameters() {
+    return {
       proximal_point: state.landmarks.proximal,
       distal_point: state.landmarks.distal,
       side_point: state.landmarks.side,
@@ -728,32 +827,20 @@ async function buildSplint() {
       circumference_mid_mm: parseFloat($('#p-circ-mid').value) || 0,
       circumference_distal_mm: parseFloat($('#p-circ-dist').value) || 0,
     };
-    const res = await fetch('/api/build', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ session_id: state.sessionId, params }),
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Không tạo được mô hình nẹp.');
-    renderSplint(data);
-    updateInspectUI(data);
-    goToStep(4);
-    showToast('Đã tạo xong nẹp 3D lưới tổ ong & lưới Quad cho Fusion 360 Form!', 'success');
-  } catch (err) {
-    showToast(friendlyError(err), 'error', 6500);
-  } finally {
-    setLoading(false);
-  }
 }
 
 async function exportBundle() {
-  if (!state.sessionId || !state.buildData) {
+  if (state.busy) return;
+  if (!state.sessionId || !currentBuildMatches() || !$('#confirm-scale').checked || !$('#confirm-region').checked) {
     goToStep(3);
     return showToast('Hãy tạo mô hình nẹp 3D ở Bước 3 trước khi xuất.', 'error');
   }
   const exportMode = $('#chk-export-full')?.checked ? 'full' : 'fusion_only';
   const outputDir = ($('#export-output-dir')?.value || '').trim();
   if (outputDir) localStorage.setItem('splintfit_output_dir', outputDir);
+  $('#export-success-box').classList.add('hidden');
+  state.lastExportId = null;
+  $('#export-files-list').textContent = '';
   setLoading(true, exportMode === 'full' ? 'Đang xuất gói đầy đủ…' : 'Đang xuất 5 file mesh cho Fusion 360 Form…');
   try {
     const res = await fetch('/api/export', {
@@ -761,6 +848,8 @@ async function exportBundle() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         session_id: state.sessionId,
+        build_id: state.buildData.build_id,
+        params: collectParameters(),
         case_id: $('#case-id').value,
         side: $('#hand-side').value,
         export_mode: exportMode,
@@ -770,6 +859,8 @@ async function exportBundle() {
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Xuất gói thất bại.');
     state.lastExportId = data.export_id;
+    $('#btn-download-zip').href = data.download_url;
+    $('#export-folder-path').textContent = data.folder_path;
     let savedLocationText = data.folder_path;
 
     // If user picked a native folder via Browser File System Access API, write files directly into it!
@@ -785,6 +876,10 @@ async function exportBundle() {
         const fileHandle = await targetDir.getFileHandle(parts[parts.length - 1], { create: true });
         const writable = await fileHandle.createWritable();
         const fRes = await fetch(`/api/export/${data.export_id}/file/${encodeURI(f.path)}`);
+        if (!fRes.ok) {
+          await writable.abort();
+          throw new Error('Không đọc được ' + f.path + '. Gói trên máy chủ vẫn có thể tải ZIP.');
+        }
         const blob = await fRes.blob();
         await writable.write(blob);
         await writable.close();
@@ -795,6 +890,8 @@ async function exportBundle() {
     $('#export-success-box').classList.remove('hidden');
     $('#export-folder-path').textContent = savedLocationText;
     $('#btn-download-zip').href = data.download_url;
+    $('#btn-open-folder').classList.toggle('hidden', Boolean(state.exportDirHandle));
+    $('#btn-copy-path').classList.toggle('hidden', Boolean(state.exportDirHandle));
     $('#export-files-list').innerHTML = data.files
       .map((f) => {
         const isQuad = f.path.endsWith('_quad.obj');
@@ -808,6 +905,12 @@ async function exportBundle() {
       'success'
     );
   } catch (err) {
+    if (state.lastExportId) {
+      $('#export-success-box').classList.remove('hidden');
+      $('#export-folder-path').textContent += ' — chưa xác nhận lưu đủ vào thư mục trình duyệt; tải ZIP để lấy bản server.';
+      $('#btn-open-folder').classList.add('hidden');
+      $('#btn-copy-path').classList.add('hidden');
+    }
     showToast(err.message, 'error');
   } finally {
     setLoading(false);
@@ -868,8 +971,9 @@ $('#btn-pick-native-dir').addEventListener('click', async () => {
     try {
       const handle = await window.showDirectoryPicker({ mode: 'readwrite' });
       state.exportDirHandle = handle;
+      $('#export-output-dir').value = '';
       const statusEl = $('#native-dir-status');
-      statusEl.innerHTML = `✓ Đã chọn thư mục trực tiếp: <strong>${handle.name}</strong>`;
+      statusEl.textContent = `Đã chọn thư mục trực tiếp: ${handle.name}`;
       statusEl.classList.remove('hidden');
       showToast(`Đã chọn thư mục "${handle.name}". Khi bấm Xuất, file sẽ lưu thẳng vào đây!`, 'success', 3500);
       return;
@@ -878,6 +982,11 @@ $('#btn-pick-native-dir').addEventListener('click', async () => {
     }
   }
   showToast('Trình duyệt hiện tại không hỗ trợ chọn thư mục trực tiếp. Hãy dùng nút Desktop / Downloads / Documents bên dưới.', 'info', 4500);
+});
+
+$('#export-output-dir').addEventListener('input', () => {
+  state.exportDirHandle = null;
+  $('#native-dir-status').classList.add('hidden');
 });
 
 $('#btn-quick-demo').addEventListener('click', () => loadDemo('hand_forearm'));
@@ -918,9 +1027,11 @@ $('#scan-piece-select').addEventListener('change', async (e) => {
 $$('[data-pick]').forEach((btn) => btn.addEventListener('click', () => setPickMode(btn.dataset.pick)));
 $('#btn-cancel-pick').addEventListener('click', () => setPickMode(null));
 $('#btn-auto-landmarks').addEventListener('click', () => {
+  invalidateDesign();
+  $('#confirm-region').checked = false;
   if (state.safeFrame) {
     initSafeZoneSliders(state.safeFrame);
-    showToast('Đã đặt lại vùng nẹp an toàn mặc định.', 'info', 2200);
+    showToast('Đã đặt lại gợi ý hình học. Kiểm vùng và xác nhận lại.', 'info', 2200);
     return;
   }
   if (!state.suggestedLandmarks) return;
@@ -937,6 +1048,32 @@ $('#btn-auto-landmarks').addEventListener('click', () => {
 $('#sl-prox-pos').addEventListener('input', () => syncLandmarksFromSliders('prox'));
 $('#sl-dist-pos').addEventListener('input', () => syncLandmarksFromSliders('dist'));
 $('#sl-seam-angle').addEventListener('input', () => syncLandmarksFromSliders('ang'));
+
+$('#btn-swap-ends').addEventListener('click', () => {
+  if (!state.safeFrame) return;
+  const sf = structuredClone(state.safeFrame);
+  [sf.safe_min_mm, sf.safe_max_mm] = [-sf.safe_max_mm, -sf.safe_min_mm];
+  [sf.default_start_mm, sf.default_end_mm] = [-sf.default_end_mm, -sf.default_start_mm];
+  sf.axis_z = sf.axis_z.map((v) => -v);
+  sf.axis_y = sf.axis_y.map((v) => -v);
+  initSafeZoneSliders(sf);
+  showToast('Đã đảo hướng trục và đặt lại hai đầu. Chọn lại vùng dưới khuỷu.', 'info');
+});
+
+$$('[id^="p-"], #relief-radius, #relief-extra, #confirm-scale, #confirm-region').forEach((el) => {
+  el.addEventListener('input', invalidateDesign);
+});
+
+$('#scan-unit').addEventListener('change', () => {
+  invalidateDesign();
+  state.sessionId = null;
+  $('#confirm-scale').checked = false;
+  $('#confirm-region').checked = false;
+  state.step = 1;
+  goToStep(1);
+  $('#scene-badge').textContent = 'Đơn vị đã đổi — cần nạp lại file';
+  showToast('Nạp lại file theo đơn vị vừa chọn; bản xem cũ chưa được đổi tỷ lệ.', 'info');
+});
 
 $$('.cam-btn').forEach((btn) => btn.addEventListener('click', () => fitCamera(btn.dataset.cam)));
 
