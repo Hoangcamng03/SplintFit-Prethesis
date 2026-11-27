@@ -12,7 +12,7 @@
 ## Mốc 13 — 27/11/2026: Tạo biểu tượng ứng dụng (`.ico`) & Shortcut ngoài màn hình chính Desktop
 
 ### 1. Bối cảnh & Quyết định kỹ thuật
-- Thiết kế tệp biểu tượng đa độ phân giải (`16×16` tới `256×256`) tại `desktop/splintfit.ico` (chữ lồng `SF` trên nền chuyển sắc xanh ngọc y khoa `#0F766E → #0284C7` kèm họa tiết lục giác tổ ong) và gắn trực tiếp vào cửa sổ/thanh tác vụ của ứng dụng (`setWindowIcon`).
+- Thiết kế tệp biểu tượng 3D nẹp cổ tay lưới tổ ong đa độ phân giải (`16×16` tới `256×256`, bo góc trong suốt chuẩn Windows 11) tại `desktop/splintfit_3d.ico` và gắn trực tiếp vào cửa sổ/thanh tác vụ của ứng dụng (`setWindowIcon`).
 - Tạo lối tắt **`SplintFit Studio`** ngay trên màn hình chính Windows (`Desktop`), gọi trực tiếp `pythonw.exe` chạy `D:\SplintFit3D\App\desktop\main_window.py` để mở thẳng cửa sổ phần mềm mà không hiện cửa sổ dòng lệnh đen.
 
 ### 2. Trạng thái & Kết quả kiểm chứng
