@@ -32,6 +32,7 @@ if str(ROOT_DIR) not in sys.path:
 import numpy as np  # noqa: E402
 import pyvista as pv  # noqa: E402
 from PyQt6.QtCore import QSettings, Qt  # noqa: E402
+from PyQt6.QtGui import QIcon  # noqa: E402
 from PyQt6.QtWidgets import (  # noqa: E402
     QApplication,
     QButtonGroup,
@@ -163,7 +164,10 @@ class SplintFitStudioWindow(QMainWindow):
         super().__init__()
         self.offscreen = offscreen
         self.settings = QSettings("SplintFit", "SplintFitStudioDesktop")
-        self.setWindowTitle("SplintFit Studio — Thiết kế nẹp 3D & Fusion 360 Form (Desktop v3.0)")
+        self.setWindowTitle("SplintFit Studio — Thiết kế nẹp 3D & Fusion 360 Form (Desktop v3.2)")
+        icon_path = Path(__file__).resolve().parent / "splintfit.ico"
+        if icon_path.is_file():
+            self.setWindowIcon(QIcon(str(icon_path)))
         self.resize(1380, 860)
         self.setMinimumSize(1060, 680)
 

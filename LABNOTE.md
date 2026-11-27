@@ -9,6 +9,25 @@
 
 ---
 
+## Mốc 13 — 27/11/2026: Tạo biểu tượng ứng dụng (`.ico`) & Shortcut ngoài màn hình chính Desktop
+
+### 1. Bối cảnh & Quyết định kỹ thuật
+- Thiết kế tệp biểu tượng đa độ phân giải (`16×16` tới `256×256`) tại `desktop/splintfit.ico` (chữ lồng `SF` trên nền chuyển sắc xanh ngọc y khoa `#0F766E → #0284C7` kèm họa tiết lục giác tổ ong) và gắn trực tiếp vào cửa sổ/thanh tác vụ của ứng dụng (`setWindowIcon`).
+- Tạo lối tắt **`SplintFit Studio`** ngay trên màn hình chính Windows (`Desktop`), gọi trực tiếp `pythonw.exe` chạy `D:\SplintFit3D\App\desktop\main_window.py` để mở thẳng cửa sổ phần mềm mà không hiện cửa sổ dòng lệnh đen.
+
+### 2. Trạng thái & Kết quả kiểm chứng
+- Kiểm thử tự động (`tests/test_desktop_app.py`) PASS sau khi gắn biểu tượng cửa sổ.
+- Đã đồng bộ lên GitHub nhánh `studio-v2`.
+
+### 3. Hạn chế & Rủi ro đang mở
+- Shortcut `SplintFit Studio.lnk` nằm cục bộ trên Desktop Windows (trỏ tới `D:\SplintFit3D\App`); nếu đổi vị trí thư mục `App` sau này cần cập nhật lại đường dẫn shortcut.
+
+### 4. Bước tiếp theo cần làm ngay
+1. Nhấp đúp biểu tượng **`SplintFit Studio`** trên màn hình chính Windows để sử dụng ngay.
+2. Thực nghiệm quét tay thật bằng KIRI Engine và test quy trình hoàn chỉnh sang Fusion 360 Form.
+
+---
+
 ## Mốc 12 — 27/11/2026: Hoàn thiện tài liệu hướng dẫn vận hành & giải thích thông số (`USER_GUIDE.md`)
 
 ### 1. Bối cảnh & Quyết định kỹ thuật
