@@ -165,7 +165,7 @@ class SplintFitStudioWindow(QMainWindow):
         self.offscreen = offscreen
         self.settings = QSettings("SplintFit", "SplintFitStudioDesktop")
         self.setWindowTitle("SplintFit Studio — Thiết kế nẹp 3D & Fusion 360 Form (Desktop v3.2)")
-        icon_path = Path(__file__).resolve().parent / "splintfit.ico"
+        icon_path = Path(__file__).resolve().parent / "splintfit_3d.ico"
         if icon_path.is_file():
             self.setWindowIcon(QIcon(str(icon_path)))
         self.resize(1380, 860)
